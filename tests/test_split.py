@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso", "Will Van Treuren"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -16,8 +16,8 @@ from unittest import TestCase, main
 
 from biom.parse import parse_biom_table
 from biom.table import Table
-from skbio.core.sequence import DNA
-from skbio.core.alignment import SequenceCollection
+from skbio.sequence import DNA
+from skbio.alignment import SequenceCollection
 from skbio.parse.sequences import parse_fasta
 
 from qiime.split import split_fasta

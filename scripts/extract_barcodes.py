@@ -5,11 +5,11 @@ __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["William Walters"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@gmail.com"
 
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                         make_option, qiime_open)

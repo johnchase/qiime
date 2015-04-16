@@ -5,14 +5,14 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
 from os.path import join
 from string import strip
 
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 
 from qiime.make_distance_boxplots import make_distance_boxplots, SORT_TYPES
 from qiime.stats import all_pairs_t_test, tail_types

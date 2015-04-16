@@ -8,14 +8,14 @@ __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jesse Stombaugh"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 
 import os
 
-from skbio.core.alignment import SequenceCollection
-from skbio.core.sequence import DNA
+from skbio.alignment import SequenceCollection
+from skbio.sequence import DNA
 from skbio.parse.sequences import parse_fasta
 
 from qiime.util import make_option

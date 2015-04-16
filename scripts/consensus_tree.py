@@ -6,13 +6,13 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "justinak@gmail.com"
 
 import os
 
-from skbio.core.tree import TreeNode, majority_rule
+from skbio.tree import TreeNode, majority_rule
 
 from qiime.parse import parse_newick, parse_rarefaction_fname
 from qiime.util import (parse_command_line_parameters, get_options_lookup,

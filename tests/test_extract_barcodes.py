@@ -4,7 +4,7 @@ __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"  # consider project name
 __credits__ = ["William Walters", "Daniel McDonald"]  # remember to add yourself
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
 
@@ -16,7 +16,7 @@ from tempfile import mkdtemp
 from unittest import TestCase, main
 
 import numpy as np
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 from qiime.extract_barcodes import (extract_barcodes,
                                     process_barcode_single_end_data, process_barcode_paired_end_data,
                                     process_barcode_paired_stitched, process_barcode_in_label,

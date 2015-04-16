@@ -7,7 +7,7 @@ __author__ = "William Anton Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["William Anton Walters"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "William Anton Walters"
 __email__ = "william.a.walters@gmail.com"
 
@@ -17,7 +17,7 @@ from shutil import rmtree
 from os.path import exists, join, split
 from tempfile import mkstemp, mkdtemp
 
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 
 from qiime.validate_demultiplexed_fasta import check_fasta_seqs,\
     get_dup_labels_perc, check_labels_sampleids,\

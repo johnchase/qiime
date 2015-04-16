@@ -4,7 +4,7 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Rob Knight", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
@@ -20,8 +20,8 @@ from biom.table import Table
 from cogent.maths.unifrac.fast_unifrac import PD_whole_tree
 from numpy import array
 from numpy.testing import assert_almost_equal
-from skbio.math.diversity.alpha import observed_otus, osd
-from skbio.util.misc import remove_files
+from skbio.diversity.alpha import observed_otus, osd
+from skbio.util import remove_files
 
 from qiime.alpha_diversity import (AlphaDiversityCalc, AlphaDiversityCalcs,
                                    single_file_cup)

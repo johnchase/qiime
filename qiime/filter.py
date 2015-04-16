@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Will Van Treuren", "Daniel McDonald",
                "Jai Ram Rideout", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -378,7 +378,8 @@ def filter_fastq(input_seqs_f, output_seqs_f, seqs_to_keep, negate=False,
         else:
             keep_seq = lambda x: not seqid_f(x)
 
-    for seq_id, seq, qual in parse_fastq(input_seqs_f):
+    for seq_id, seq, qual in parse_fastq(input_seqs_f,
+                                         enforce_qual_range=False):
         if keep_seq(seq_id):
             output_seqs_f.write(format_fastq_record(seq_id, seq, qual))
     output_seqs_f.close()
@@ -546,12 +547,12 @@ def get_filter_function(ids_to_keep, min_count, max_count,
     return f
 
 
-def filter_samples_from_otu_table(
-        otu_table, ids_to_keep, min_count, max_count):
+def filter_samples_from_otu_table(otu_table, ids_to_keep, min_count, max_count,
+                                  negate_ids_to_keep=False):
     filter_f = get_filter_function({}.fromkeys(ids_to_keep),
                                    min_count,
                                    max_count,
-                                   0, inf)
+                                   0, inf, negate_ids_to_keep)
     return otu_table.filter(filter_f, axis='sample', inplace=False)
 
 

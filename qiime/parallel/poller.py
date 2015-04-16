@@ -6,14 +6,14 @@ from optparse import OptionParser
 from os import getenv, remove
 from os.path import exists, isdir
 from shutil import rmtree
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from qiime.parse import parse_tmp_to_final_filepath_map_file
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 

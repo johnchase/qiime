@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -14,7 +14,7 @@ __email__ = "gregcaporaso@gmail.com"
 from qiime.util import make_option
 from glob import glob
 from os.path import split
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.format import illumina_data_to_fastq
 

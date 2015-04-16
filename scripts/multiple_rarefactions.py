@@ -6,14 +6,14 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
 import os.path
 from functools import partial
 
-from skbio.math.subsample import subsample
+from skbio.stats import subsample
 
 from qiime.util import parse_command_line_parameters, create_dir
 from qiime.util import make_option
@@ -54,7 +54,7 @@ script_info['optional_options'] = [
     # but I'm not sure if we can do anything about it since '-' is not allowed
     # in variable names... Hmmm... Changing the long-form parameter name
     # would cause older parameter files not to work.
-    make_option('-n', '--num-reps', dest='num_reps', default=10, type='int',
+    make_option('-n', '--num_reps', dest='num_reps', default=10, type='int',
                 help='The number of iterations at each step. [default: %default]'),
     make_option('--lineages_included', default=False,
                 action="store_true",
@@ -73,7 +73,7 @@ script_info['option_label'] = {'input_path': 'OTU table filepath',
                                'min': 'Min # of seqs/sample',
                                'max': 'Max # of seqs/sample',
                                'step': 'Step size',
-                               'num-reps': '# of iterations',
+                               'num_reps': '# of iterations',
                                'lineages_included': 'Include lineages',
                                'keep_empty_otus': 'Retain empty OTUs'}
 

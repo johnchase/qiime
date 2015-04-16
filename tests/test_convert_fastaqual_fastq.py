@@ -4,7 +4,7 @@ __author__ = "Adam Robbins-Pianka, Abhisaar Yadav"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Adam Robbins-Pianka", "Abhisaar Yadav", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Adam Robbins-Pianka"
 __email__ = "adam.robbinspianka@colorado.edu"
 
@@ -16,7 +16,7 @@ from os import chmod, close
 from tempfile import mkstemp, mkdtemp
 
 from unittest import TestCase, main
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 
 
 from qiime.convert_fastaqual_fastq import (convert_fastq, convert_fastaqual,

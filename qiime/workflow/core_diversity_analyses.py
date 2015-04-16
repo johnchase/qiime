@@ -23,7 +23,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -34,12 +34,13 @@ _index_headers = {
     "alpha_diversity": "Alpha diversity results",
     "taxa_summary": "Taxonomic summary results",
     "taxa_summary_categorical": "Taxonomic summary results (by %s)",
-    "group_significance": "Group significance results", 
-    "failures_fp": "Failures", 
+    "group_significance": "Group significance results",
+    "failures_fp": "Failures",
     "otu_maps": "OTU maps",
-    "sequences": "Reference sequences",
+    "sequences": "Sequences",
     "otu_tables": "OTU tables",
-    "trees": "Trees"}
+    "trees": "Trees",
+    "taxa_assignments": "Taxonomy assignments"}
 
 
 def format_index_link(link_description, relative_path):
@@ -101,7 +102,7 @@ def get_index_page_header():
 
 
 def get_index_page_footer():
-    return """<p><b>Need help?</b><br>You can get answers to your questions on the <a href="http://forum.qiime.org" target="_blank">QIIME Forum</a>.<br>See the <a href="http://qiime.org/tutorials/index.html" target="_blank">QIIME tutorials</a> for examples of additional analyses that can be run.<br>You can find documentation of the QIIME scripts in the <a href="http://qiime.org/scripts/index.html" target="_blank">QIIME script index</a>.
+    return """<p><b>Need help?</b> See <a href="http://help.qiime.org" target="_blank">http://help.qiime.org</a>.
 </body></html>"""
 
 
@@ -494,5 +495,5 @@ def run_core_diversity_analyses(
         command_handler(commands, status_update_callback, logger)
     else:
         logger.close()
-    
+
     generate_index_page(index_links, index_fp)

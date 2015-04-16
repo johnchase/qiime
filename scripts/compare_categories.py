@@ -6,12 +6,12 @@ __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Logan Knecht", "Michael Dwan", "Damien Coy", "Jai Ram Rideout",
                "Levi McCracken"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
 from os.path import exists
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 from qiime.compare_categories import compare_categories, methods
 from qiime.util import (parse_command_line_parameters, make_option,
                         get_options_lookup)

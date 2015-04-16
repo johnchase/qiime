@@ -10,7 +10,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Adam Robbins-Pianka"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -88,7 +88,7 @@ __author__ = "AUTHOR_NAME"
 __copyright__ = "COPYRIGHT"
 __credits__ = ["AUTHOR_NAME"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "AUTHOR_NAME"
 __email__ = "AUTHOR_EMAIL"
 """ % strftime('%d %b %Y')
@@ -121,7 +121,7 @@ from tempfile import mkstemp
 from os import close
 
 from cogent.util.unit_test import TestCase, main
-from skbio.util.misc import remove_files, create_dir
+from skbio.util import remove_files, create_dir
 
 from qiime.util import get_qiime_temp_dir
 from qiime.test import initiate_timeout, disable_timeout

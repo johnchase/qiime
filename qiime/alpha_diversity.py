@@ -6,7 +6,7 @@ __credits__ = ["Justin Kuczynski", "Rob Knight", "Greg Caporaso",
                "William Van Treuren", "Jose Antonio Navas Molina",
                "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
@@ -37,7 +37,7 @@ import os.path
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 
-import skbio.math.diversity.alpha as alph
+import skbio.diversity.alpha as alph
 from numpy import array, zeros
 
 from qiime.util import FunctionWithParams

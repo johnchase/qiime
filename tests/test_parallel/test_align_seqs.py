@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -16,7 +16,7 @@ from os.path import exists, join
 from os import close
 from tempfile import mkstemp, mkdtemp
 
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from unittest import TestCase, main
 from qiime.parallel.align_seqs import ParallelAlignSeqsPyNast
 from qiime.util import get_qiime_temp_dir, count_seqs_in_filepaths

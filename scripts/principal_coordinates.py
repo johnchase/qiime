@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Rob Knight", "Antonio Gonzalez Pena",
                "Catherine Lozupone", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
 
@@ -96,16 +96,14 @@ def main():
             # Store the PCoA results on the output directory
             base_fname, ext = splitext(fname)
             out_file = join(output_path, 'pcoa_%s.txt' % base_fname)
-            with open(out_file, 'w') as f:
-                pcoa_scores.to_file(f)
+            pcoa_scores.write(out_file)
 
     else:
         # Run PCoA on the input distance matrix
         with open(input_path, 'U') as f:
             pcoa_scores = pcoa(f)
         # Store the results in the output file
-        with open(output_path, 'w') as f:
-            pcoa_scores.to_file(f)
+        pcoa_scores.write(output_path)
 
 
 if __name__ == "__main__":

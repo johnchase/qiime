@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Jose Antonio Navas Molina", "Antonio Gonzalez Pena",
                "Yoshiki Vazquez Baeza", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jose Antonio Navas Molina"
 __email__ = "josenavasmolina@gmail.com"
 
@@ -16,8 +16,8 @@ from unittest import TestCase, main
 import numpy as np
 import numpy.testing as npt
 import pandas as pd
-from skbio.math.stats.ordination import OrdinationResults
-from skbio.math.gradient import (GroupResults, CategoryResults,
+from skbio.stats.ordination import OrdinationResults
+from skbio.stats.gradient import (GroupResults, CategoryResults,
                                  GradientANOVAResults)
 
 from qiime.compare_trajectories import run_trajectory_analysis
@@ -175,12 +175,12 @@ class CompareTrajectoriesTests(TestCase):
                                                               7.1036434615,
                                                               4.0675712674]),
                                          6.73392072123,
-                                         {'trajectory': 13.874494152}, None)
+                                         {'2-norm': 13.874494152}, None)
         exp_fast_group = GroupResults('Fast', np.array([11.2291654905,
                                                         3.9163741156,
                                                         4.4943507388]),
                                       6.5466301150,
-                                      {'trajectory': 12.713431181}, None)
+                                      {'2-norm': 12.713431181}, None)
         exp_treatment = CategoryResults('Treatment', 0.9374500147,
                                         [exp_control_group, exp_fast_group],
                                         None)

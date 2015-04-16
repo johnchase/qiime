@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -16,8 +16,8 @@ from matplotlib import use
 use('Agg', warn=False)
 from pylab import xlim, ylim, xlabel, ylabel, plot, savefig
 import numpy as np
-from skbio.util.misc import create_dir
-from biom.parse import parse_biom_table
+from skbio.util import create_dir
+from biom import load_table
 from biom.exception import TableException
 
 from qiime.util import (parse_command_line_parameters, make_option,
@@ -103,7 +103,7 @@ def main():
         # samples to work with
         sample_ids = None
 
-    input_table = parse_biom_table(open(input_fp, 'U'))
+    input_table = load_table(input_fp)
 
     otu_counts = []
     summary_figure_fp = join(output_dir, 'core_otu_size.pdf')

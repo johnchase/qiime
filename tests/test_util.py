@@ -18,13 +18,13 @@ from biom import example_table
 
 from numpy.testing import assert_almost_equal
 
-from skbio.core.sequence import DNASequence
+from skbio.sequence import DNASequence
 from skbio.parse.sequences import parse_fasta
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 
 from cogent.cluster.procrustes import procrustes
 
-from brokit.formatdb import build_blast_db_from_fasta_file
+from bfillings.formatdb import build_blast_db_from_fasta_file
 
 from qiime.parse import (fields_to_dict, parse_distmat, parse_mapping_file,
                          parse_mapping_file_to_dict, parse_otu_table,
@@ -69,7 +69,7 @@ __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
                "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza",
                "Will Van Treuren", "Luke Ursell"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -109,9 +109,25 @@ class TopLevelTests(TestCase):
     def test_write_biom_table(self):
         """HDF5-format BIOM file can be written"""
         fd, output_fp = mkstemp(prefix="test_biom_")
+        close(fd)
+
         self.files_to_remove.append(output_fp)
         write_biom_table(example_table, output_fp)
         self.assertTrue(exists(output_fp))
+
+    def test_write_biom_table_no_h5py(self):
+        fd, output_fp = mkstemp(prefix="test_biom_")
+        close(fd)
+
+        self.files_to_remove.append(output_fp)
+
+        write_biom_table(example_table, output_fp, write_hdf5=False)
+        self.assertTrue(exists(output_fp))
+
+        # verify it is indeed a JSON string
+        with open(output_fp, 'r') as f:
+            self.assertTrue(f.read(1) == '{')
+
 
     def test_expand_otu_ids(self):
         """expand otu ids functions as expected """
@@ -1998,6 +2014,27 @@ class MetadataMapTests(TestCase):
                 self.assertEqual(obs_elements[exp_i],
                                  exp_elements[obs_i])
 
+    def test_str_missing_required_headers(self):
+        # missing required headers at beginning
+        mdm = MetadataMap.parseMetadataMap([
+            "#SampleID\tFoo\n",
+            "a\tbar\n",
+            "b\tbaz\n"
+        ])
+
+        with self.assertRaises(ValueError):
+            str(mdm)
+
+        # missing required headers at end
+        mdm = MetadataMap.parseMetadataMap([
+            "#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tFoo\n",
+            "a\tA\tAAA\tbar\n",
+            "b\tC\tAAA\tbaz\n"
+        ])
+
+        with self.assertRaises(ValueError):
+            str(mdm)
+
     def test_merge_mapping_file(self):
         """merge_mapping_file: functions with default parameters
         """
@@ -2276,10 +2313,7 @@ class RExecutorTests(TestCase):
                 " -c DOB -o " + self.output_dir]
 
         rex = RExecutor(TmpDir=self.tmp_dir)
-        results = rex(args, "permdisp.r", self.output_dir)
-
-        self.files_to_remove.append(join(self.tmp_dir, 'R.stdout'))
-        self.files_to_remove.append(join(self.tmp_dir, 'R.stderr'))
+        results = rex(args, "permdisp.r")
 
         # Make sure an output file was created with something in it.
         results_fp = join(self.output_dir, 'permdisp_results.txt')

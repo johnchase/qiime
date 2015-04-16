@@ -6,7 +6,7 @@ __credits__ = ["Rob Knight", "Justin Kuczynski", "Jeremy Widmann",
                "Antonio Gonzalez Pena", "Daniel McDonald", "Jai Ram Rideout"]
 # remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -17,7 +17,7 @@ from re import compile, sub
 from os import walk
 from os.path import join, splitext, exists, isfile, abspath
 
-from skbio.core.sequence import BiologicalSequence
+from skbio.sequence import BiologicalSequence
 from biom.table import Table
 
 from qiime.util import get_qiime_library_version, load_qiime_config

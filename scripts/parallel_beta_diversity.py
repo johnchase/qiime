@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso", "Jose Antonio Navas Molina", "Emily TerAvest"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -113,7 +113,7 @@ def main():
                         params,
                         job_prefix=opts.job_prefix,
                         poll_directly=opts.poll_directly,
-                        suppress_submit_jobs=False)
+                        suppress_submit_jobs=opts.suppress_submit_jobs)
 
     else:
         input_fps = glob('%s/*' % input_path)
@@ -128,7 +128,7 @@ def main():
                         params,
                         job_prefix=opts.job_prefix,
                         poll_directly=opts.poll_directly,
-                        suppress_submit_jobs=False)
+                        suppress_submit_jobs=opts.suppress_submit_jobs)
 
 if __name__ == "__main__":
     main()

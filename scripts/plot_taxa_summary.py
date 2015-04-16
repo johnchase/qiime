@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Jesse Stombaugh", "Julia Goodrich", "Justin Kuczynski",
                "John Chase", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 """
@@ -139,10 +139,6 @@ script_info['optional_options'] = [
                 dest='include_html_legend', default=False,
                 help='Include HTML legend. If present, the writing of the legend' +
                 ' in the html page is included. [default: %default]'),
-    make_option('-m', '--include_html_counts', action='store_true',
-                dest='include_html_counts', default=False,
-                help='Include HTML counts. If present, the writing of the counts' +
-                ' in the html table is included [default: %default]'),
     make_option('-a', '--label_type', type='choice',
                 help='Label type ("numeric" or "categorical"). ' +
                 ' If the label type is defined as numeric, the x-axis will be' +
@@ -150,24 +146,6 @@ script_info['optional_options'] = [
                 ' categorically and be evenly spaced [default: %default].',
                 choices=['categorical', 'numeric'], default='categorical'),
 ]
-script_info['option_label'] = {'counts_fname': 'Summarized taxa filepaths',
-                               'labels': 'Taxonomic levels',
-                               'num_categories': '# of categories to retain',
-                               'map_fname': 'QIIME-formatted mapping filepath',
-                               'colorby': 'Colorby category',
-                               'dir-prefix': 'Output directory',
-                               'prefs_path': 'Preferences filepath',
-                               'background_color': 'Background color',
-                               'type_of_file': 'Image type',
-                               'dpi': 'Image resolution',
-                               'x_width': 'X-axis width',
-                               'y_height': 'Y-axis height',
-                               'bar_width': 'Bar width',
-                               'chart_type': 'Chart type(s)',
-                               'resize_nth_label': 'Resize nth label',
-                               'include_html_legend': 'Include HTML legend',
-                               'include_html_counts': 'Include HTML counts',
-                               'label_type': 'X-axis label type'}
 
 script_info['version'] = __version__
 
@@ -280,7 +258,6 @@ def main():
     generate_image_type = opts.type_of_file
     label_type = opts.label_type
     include_html_legend = opts.include_html_legend
-    include_html_counts = opts.include_html_counts
     plots_to_make = opts.chart_type
     for chart_type in plots_to_make:
 
@@ -294,7 +271,7 @@ def main():
         make_all_charts(data, dir_path, filename, num_categories,
                         colorby, args, color_data, color_prefs, background_color, label_color,
                         chart_type, generate_image_type, plot_width, plot_height, bar_width, dpi,
-                        resize_nth_label, label_type, include_html_legend, include_html_counts)
+                        resize_nth_label, label_type, include_html_legend)
 
 
 if __name__ == "__main__":

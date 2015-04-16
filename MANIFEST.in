@@ -1,7 +1,7 @@
-include README.md
+include CONTRIBUTING.md
+include COPYING.txt
 include ChangeLog.md
-include README
-include INSTALL
+include README.md
 
 graft examples
 graft tests
@@ -16,6 +16,12 @@ global-exclude .git
 global-exclude FastTree
 global-exclude uclust
 global-exclude FlowgramAli_4frame
+global-exclude indexdb_rna
+global-exclude sortmerna
+global-exclude sumaclust
+global-exclude swarm
+global-exclude amplicon_contingency_table.py
+global-exclude swarm_breaker.py
 global-exclude *.hi
 global-exclude *.o
 global-exclude qiime_test_data

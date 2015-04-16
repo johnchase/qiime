@@ -5,7 +5,7 @@ __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jesse Stombaugh"]  # remember to add yourself
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 
@@ -13,8 +13,8 @@ __email__ = "jesse.stombaugh@colorado.edu"
 from string import strip
 import re
 
-from skbio.core.alignment import SequenceCollection
-from skbio.core.sequence import DNA
+from skbio.alignment import SequenceCollection
+from skbio.sequence import DNA
 
 def filter_otus(otus, prefs):
     """filters the otus file based on which samples should be removed and

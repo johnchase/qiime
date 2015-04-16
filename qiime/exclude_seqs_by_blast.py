@@ -10,14 +10,14 @@ from os.path import join
 from time import strftime, time
 
 from skbio.parse.sequences import parse_fasta
-from brokit.blast import blast_seqs, Blastall, BlastResult
+from bfillings.blast import blast_seqs, Blastall, BlastResult
 
 
 __author__ = "Jesse Zaneveld"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jesse Zaneveld", "Rob Knight", "Adam Robbins-Pianka"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jesse Zaneveld"
 __email__ = "zaneveld@gmail.com"
 

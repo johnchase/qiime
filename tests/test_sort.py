@@ -6,12 +6,12 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Daniel McDonald", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from unittest import TestCase, main
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from qiime.parse import parse_mapping_file
 from biom.parse import parse_biom_table
 from qiime.sort import (sort_sample_ids_by_mapping_value,

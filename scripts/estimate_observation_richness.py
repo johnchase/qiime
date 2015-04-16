@@ -5,13 +5,13 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2013, The QIIME Project"
 __credits__ = ["Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
 from os.path import join
 from biom import load_table
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                         make_option)
 
@@ -64,9 +64,10 @@ http://qiime.org for details).
 In addition to Colwell et al. (2012), the following resources were extremely
 useful while implementing and testing these estimators, so it is appropriate to
 also acknowledge them here:
-    Hsieh et al. (2013)
-    Shen et al. (2003)
-    Colwell (2013)
+
+- Hsieh et al. (2013)
+- Shen et al. (2003)
+- Colwell (2013)
 
 References:
 

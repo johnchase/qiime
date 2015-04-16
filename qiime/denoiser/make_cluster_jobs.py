@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 # remember to add yourself if you make changes
 __credits__ = ["Jens Reeder", "Rob Knight", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 
@@ -16,7 +16,7 @@ from os import remove, rename, rmdir, makedirs, close
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import mkstemp
 
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 from burrito.util import ApplicationNotFoundError
 from burrito.util import which
 

@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 # remember to add yourself
 __credits__ = ["Jesse Stombaugh", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 
@@ -18,12 +18,11 @@ from matplotlib.pylab import *
 from matplotlib.cbook import iterable, is_string_like
 from matplotlib.patches import Ellipse
 from matplotlib.font_manager import FontProperties
-from commands import getoutput
 from string import strip
 from numpy import array, asarray, ndarray
 from time import strftime
 from random import choice
-from qiime.util import summarize_pcoas, isarray
+from qiime.util import summarize_pcoas, isarray, qiime_system_call
 from qiime.parse import group_by_field, group_by_fields, parse_coords
 from qiime.colors import data_color_order, data_colors, \
     get_group_colors, data_colors, iter_color_groups
@@ -103,7 +102,7 @@ data_colors={'blue':'#0000FF','lime':'#00FF00','red':'#FF0000', \
 default_colors = ['blue', 'lime', 'red', 'aqua', 'fuchsia', 'yellow', 'green',
                   'maroon', 'teal', 'purple', 'olive', 'silver', 'gray']
 
-# This function used to live in make_3d_plots.py but in the Boulder sk-bio 
+# This function used to live in make_3d_plots.py but in the Boulder sk-bio
 # code sprint it got moved here to remove the 3D files.
 def get_coord(coord_fname, method="IQR"):
     """Opens and returns coords location matrix and metadata.
@@ -112,7 +111,7 @@ def get_coord(coord_fname, method="IQR"):
     """
     if not os.path.isdir(coord_fname):
         try:
-            coord_f = open(coord_fname, 'U').readlines()
+            coord_f = open(coord_fname, 'U')
         except (TypeError, IOError):
             raise MissingFileError('Coord file required for this analysis')
         coord_header, coords, eigvals, pct_var = parse_coords(coord_f)
@@ -186,7 +185,8 @@ def make_line_plot(
     if generate_eps:
         eps_img_name = str('scree_plot.eps')
         savefig(os.path.join(dir_path, eps_img_name), format='eps')
-        out = getoutput("gzip -f " + os.path.join(dir_path, eps_img_name))
+        out, err, retcode = qiime_system_call(
+            "gzip -f " + os.path.join(dir_path, eps_img_name))
         eps_link = DOWNLOAD_LINK % ((os.path.join(data_file_link, eps_img_name)
                                      + ".gz"), "Download Figure")
 
@@ -272,7 +272,8 @@ def make_interactive_scatter(plot_label, dir_path, data_file_link,
     if generate_eps:
         eps_img_name = str(x_label[0:3] + 'vs' + y_label[0:3] + 'plot.eps')
         savefig(os.path.join(dir_path, eps_img_name), format='eps')
-        out = getoutput("gzip -f " + os.path.join(dir_path, eps_img_name))
+        out, err, retcode = qiime_system_call(
+            "gzip -f " + os.path.join(dir_path, eps_img_name))
         eps_link = DOWNLOAD_LINK % ((os.path.join(data_file_link, eps_img_name)
                                      + ".gz"), "Download Figure")
 
@@ -395,7 +396,8 @@ def draw_pcoa_graph(plot_label, dir_path, data_file_link, coord_1, coord_2,
                     coord_1r, coord_2r, mat_ave, sample_location,
                     data, prefs, groups, colors, background_color, label_color,
                     data_colors, data_color_order,
-                    generate_eps=True):
+                    generate_eps=True,
+                    pct_variation_below_one=False):
     """Draw PCoA graphs"""
 
     coords, pct_var = convert_coord_data_to_dict(data)
@@ -416,12 +418,17 @@ def draw_pcoa_graph(plot_label, dir_path, data_file_link, coord_1, coord_2,
             coords[coord_1][ix] = '1e-255'
 
     # Write figure labels
+    pct_exp1 = float(pct_var[coord_1])
+    pct_exp2 = float(pct_var[coord_2])
+    if float(pct_var['1']) < 1 and not pct_variation_below_one:
+        pct_exp1 *= 100
+        pct_exp2 *= 100
     props = {}
     props["title"] = "PCoA - PC%s vs PC%s" % (coord_1, coord_2)
     props["ylabel"] = "PC%s - Percent variation explained %.2f%%" \
-        % (coord_2, float(pct_var[coord_2]))
+        % (coord_2, pct_exp2)
     props["xlabel"] = "PC%s - Percent variation explained %.2f%%" \
-        % (coord_1, float(pct_var[coord_1]))
+        % (coord_1, pct_exp1)
 
     labels = coords['pc vector number']
     p1 = map(float, coords[coord_2])
@@ -530,7 +537,8 @@ def write_html_file(out_table, outpath):
 
 
 def generate_2d_plots(prefs, data, html_dir_path, data_dir_path, filename,
-                      background_color, label_color, generate_scree):
+                      background_color, label_color, generate_scree,
+                      pct_variation_below_one):
     """Generate interactive 2D scatterplots"""
     coord_tups = [("1", "2"), ("3", "2"), ("1", "3")]
     mapping = data['map']
@@ -596,7 +604,8 @@ def generate_2d_plots(prefs, data, html_dir_path, data_dir_path, filename,
                 data, prefs, groups, colors,
                 background_color, label_color,
                 data_colors, data_color_order,
-                generate_eps=True)
+                generate_eps=True,
+                pct_variation_below_one=pct_variation_below_one)
 
         out_table += TABLE_HTML % (labelname,
                                    "<br>".join(img_data[("1", "2")]),

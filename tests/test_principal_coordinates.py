@@ -5,12 +5,14 @@ __author__ = "Justin Kuzynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
-from qiime.principal_coordinates import pcoa
 from unittest import TestCase, main
+from StringIO import StringIO
+
+from qiime.principal_coordinates import pcoa
 
 
 class FunctionTests(TestCase):
@@ -18,10 +20,11 @@ class FunctionTests(TestCase):
     """Tests of top-level functions"""
 
     def setUp(self):
-        self.distmtx_txt = """\tsam1\tsam2\tsam3
-sam1\t0.00\t.18\t.44
-sam2\t0.18\t0\t.66
-sam3\t.44\t.66\t0""".split('\n')
+        self.distmtx_txt = StringIO(
+        """\tsam1\tsam2\tsam3\n"""
+        """sam1\t0.00\t0.18\t0.44\n"""
+        """sam2\t0.18\t0.0\t.66\n"""
+        """sam3\t0.44\t0.66\t0.0""")
 
     def test_pcoa(self):
         """ pcoa should throw no errors"""

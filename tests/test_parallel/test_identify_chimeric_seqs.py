@@ -5,20 +5,20 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
 from shutil import rmtree
 from glob import glob
 from os import getenv
-from os.path import basename, exists, join
+from os.path import basename, exists, join, isfile, getsize
 from tempfile import NamedTemporaryFile, mkdtemp
 from unittest import TestCase, main
 
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 
-from qiime.util import get_qiime_temp_dir, load_qiime_config
+from qiime.util import (get_qiime_temp_dir, load_qiime_config)
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.parse import fields_to_dict
 from qiime.parallel.identify_chimeric_seqs import ParallelChimericSequenceIdentifier
@@ -100,8 +100,7 @@ class ParallelChimericSequenceIdentifierTests(TestCase):
         qiime_config = load_qiime_config()
         params = {
             'reference_seqs_fp': None,
-            'aligned_reference_seqs_fp': qiime_config[
-                'pynast_template_alignment_fp'],
+            'aligned_reference_seqs_fp': qiime_config['pynast_template_alignment_fp'],
             'chimera_detection_method': 'ChimeraSlayer',
             'num_fragments': 3,
             'taxonomy_depth': 4,
@@ -118,10 +117,9 @@ class ParallelChimericSequenceIdentifierTests(TestCase):
                 poll_directly=True,
                 suppress_submit_jobs=False)
 
-        # Basic sanity check: we should get two lines (i.e. two chimeras).
-        results = [line for line in open(join(self.test_out,
-                   'ChimeraSlayer_out.txt'), 'U')]
-        self.assertEqual(len(results), 2)
+        output_filepath = join(self.test_out, 'ChimeraSlayer_out.txt')
+        self.assertTrue(isfile(output_filepath) and
+                        (getsize(output_filepath) > 0))
 
 # This test data is taken from qiime_test_data.
 in_seqs = """

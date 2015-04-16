@@ -6,25 +6,26 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Jose Antonio Navas Molina", "Daniel McDonald"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from itertools import izip, cycle
-from os.path import split, splitext
+from os.path import split, splitext, join
 from os import makedirs
 
-from numpy import log10, arange, histogram
+import numpy as np
 
 from skbio.parse.sequences import parse_fastq
-from skbio.core.sequence import DNA
+from skbio.sequence import DNA
+from skbio.format.sequences import format_fastq_record
 
 from qiime.format import (format_histogram_one_count,
                           format_split_libraries_fastq_log)
 from qiime.parse import is_casava_v180_or_later
 from qiime.hamming import decode_hamming_8
 from qiime.golay import decode_golay_12
-from qiime.quality import phred_to_ascii33, phred_to_ascii64
+from qiime.util import qiime_open
 
 
 class FastqParseError(Exception):
@@ -54,24 +55,45 @@ def bad_chars_from_threshold(first_bad_char):
         bad_chars = list(get_illumina_qual_chars()[:first_bad_char_index + 1])
         return {}.fromkeys(bad_chars)
 
+def _contiguous_regions(condition):
+    """Finds contiguous True regions of the boolean array "condition". Returns
+    a 2D array where the first column is the start index of the region and the
+    second column is the end index.
+
+    This function was derived from SO:
+    http://stackoverflow.com/a/4495197/579416
+    """
+
+    # Find the indicies of changes in "condition"
+    d = np.diff(condition)
+    idx, = d.nonzero()
+
+    # We need to start things after the change in "condition". Therefore,
+    # we'll shift the index by 1 to the right.
+    idx += 1
+
+    if condition[0]:
+        # If the start of condition is True prepend a 0
+        idx = np.r_[0, idx]
+
+    if condition[-1]:
+        # If the end of condition is True, append the length of the array
+        idx = np.r_[idx, condition.size]
+
+    # Reshape the result into two columns
+    idx.shape = (-1,2)
+    return idx
 
 def read_qual_score_filter(seq, qual, max_run_length, threshold):
     """slices illumina sequence and quality line based on quality filter
     """
     last_good_slice_end_pos = 0
     bad_run_length = 0
-    for i in range(len(seq)):
-        if qual[i] <= threshold:
-            bad_run_length += 1
-        else:
-            bad_run_length = 0
-            last_good_slice_end_pos = i + 1
+    mask = qual <= threshold
+    for starts, ends in _contiguous_regions(mask):
+        if ends - starts > max_run_length:
+            return seq[:starts], qual[:starts]
 
-        if bad_run_length > max_run_length:
-            return seq[:last_good_slice_end_pos],\
-                qual[:last_good_slice_end_pos]
-
-    # There were no runs that were too bad for too long
     return seq, qual
 
 
@@ -185,7 +207,7 @@ def process_fastq_single_end_read_file_no_barcode(
         filter_bad_illumina_qual_digit=False,
         log_f=None,
         histogram_f=None,
-        phred_to_ascii_f=None):
+        phred_offset=None):
     """ Quality filtering when a single sample has been run in a lane
 
         This code simulates a barcode file to allow us to re-use the quality
@@ -214,7 +236,7 @@ def process_fastq_single_end_read_file_no_barcode(
             barcode_correction_fn=None,
             max_barcode_errors=0,
             strict_header_match=False,
-            phred_to_ascii_f=phred_to_ascii_f):
+            phred_offset=phred_offset):
         yield e
 
 
@@ -235,7 +257,7 @@ def process_fastq_single_end_read_file(fastq_read_f,
                                        barcode_correction_fn=None,
                                        max_barcode_errors=1.5,
                                        strict_header_match=True,
-                                       phred_to_ascii_f=None):
+                                       phred_offset=None):
     """parses fastq single-end read file
     """
     header_index = 0
@@ -252,13 +274,19 @@ def process_fastq_single_end_read_file(fastq_read_f,
         fastq_read_f_line1 = fastq_read_f[0]
         fastq_read_f_line2 = fastq_read_f[1]
 
-    post_casava_v180 = is_casava_v180_or_later(fastq_read_f_line1)
-    if post_casava_v180:
-        offset = 33
+    if phred_offset is None:
+        post_casava_v180 = is_casava_v180_or_later(fastq_read_f_line1)
+        if post_casava_v180:
+            phred_offset = 33
+        else:
+            phred_offset = 64
+
+    if phred_offset == 33:
         check_header_match_f = check_header_match_180_or_later
-    else:
-        offset = 64
+    elif phred_offset == 64:
         check_header_match_f = check_header_match_pre180
+    else:
+        raise ValueError("Invalid PHRED offset: %d" % phred_offset)
 
     # compute the barcode length, if they are all the same.
     # this is useful for selecting a subset of the barcode read
@@ -285,8 +313,8 @@ def process_fastq_single_end_read_file(fastq_read_f,
     sequence_lengths = []
     seqs_per_sample_counts = {}
     for bc_data, read_data in izip(
-            parse_fastq(fastq_barcode_f, strict=False, phred_offset=offset),
-            parse_fastq(fastq_read_f, strict=False, phred_offset=offset)):
+            parse_fastq(fastq_barcode_f, strict=False, phred_offset=phred_offset),
+            parse_fastq(fastq_read_f, strict=False, phred_offset=phred_offset)):
         input_sequence_count += 1
         # Confirm match between barcode and read headers
         if strict_header_match and \
@@ -406,6 +434,37 @@ def make_histograms(lengths, binwidth=10):
     max_len = max(lengths)
     floor = (min_len / binwidth) * binwidth
     ceil = ((max_len / binwidth) + 2) * binwidth
-    bins = arange(floor, ceil, binwidth)
-    hist, bin_edges = histogram(lengths, bins)
+    bins = np.arange(floor, ceil, binwidth)
+    hist, bin_edges = np.histogram(lengths, bins)
     return hist, bin_edges
+
+
+def extract_reads_from_interleaved(
+        input_fp, forward_id, reverse_id, output_dir):
+    """Parses a single fastq file and creates two new files: forward and reverse, based on
+    the two values (comma separated) in read_direction_identifiers
+
+    input_fp: file path to input
+    read_direction_identifiers: comma separated values to identify forward and reverse reads
+    output_folder: file path to the output folder
+    """
+    forward_fp = join(output_dir, "forward_reads.fastq")
+    reverse_fp = join(output_dir, "reverse_reads.fastq")
+    ffp = open(forward_fp, 'w')
+    rfp = open(reverse_fp, 'w')
+
+    for label, seq, qual in parse_fastq(qiime_open(input_fp), strict=False,
+                                        enforce_qual_range=False):
+        fastq_string = format_fastq_record(label, seq, qual)
+        if forward_id in label:
+            ffp.write(fastq_string)
+        elif reverse_id in label and forward_id not in label:
+            rfp.write(fastq_string)
+        else:
+            ffp.close()
+            rfp.close()
+            raise ValueError("One of the input sequences doesn't have either identifier "
+                             "or it has both.\nLabel: %s\nForward: %s\n Reverse: %s" %
+                             (label, forward_id, reverse_id))
+    ffp.close()
+    rfp.close()

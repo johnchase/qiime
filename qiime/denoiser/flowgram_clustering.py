@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 # remember to add yourself if you make changes
 __credits__ = ["Jens Reeder", "Rob Knight", "Nigel Cook", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 
@@ -22,7 +22,7 @@ from math import fsum, trunc
 from tempfile import mkstemp
 
 from burrito.util import ApplicationNotFoundError, ApplicationError
-from brokit.denoiser import (lazy_parse_sff_handle, Flowgram,
+from bfillings.denoiser import (lazy_parse_sff_handle, Flowgram,
                              FlowgramCollection, seq_to_flow)
 from skbio.parse.sequences import parse_fasta
 

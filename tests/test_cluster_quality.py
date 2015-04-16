@@ -6,14 +6,14 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
 import numpy
 from os import remove
 
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 

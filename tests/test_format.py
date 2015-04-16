@@ -9,7 +9,7 @@ __credits__ = [
     "Jai Ram Rideout", "Jose Antonio Navas Molina"]
 # remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -18,7 +18,7 @@ from os import remove, close
 from string import digits
 from tempfile import mkstemp
 from numpy import array, nan, array_equal
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from unittest import TestCase, main
 from skbio.parse.sequences import parse_fasta
 from qiime.util import  get_qiime_library_version

@@ -6,7 +6,7 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Jose Antonio Navas", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
@@ -28,7 +28,7 @@ script_info = {}
 script_info[
     'brief_description'] = "This script runs any of a set of common tests to determine if a sample is statistically significantly different from another sample"
 script_info[
-    'script_description'] = "The tests are conducted on each pair of samples present in the input otu table. See the unifrac tutorial online for more details (http://bmf2.colorado.edu/unifrac/tutorial.psp)"
+    'script_description'] = "The tests are conducted on each pair of samples present in the input otu table. See the unifrac tutorial online for more details (http://unifrac.colorado.edu/)"
 
 script_info['script_usage'] = []
 
@@ -109,9 +109,20 @@ def main():
         of.write('\n'.join(result))
         of.close()
         envs_in = open(output_fp, 'U')
+        try:
+            result = fast_unifrac_permutations_file(tree_in, envs_in,
+                                                    weighted=False,
+                                                    num_iters=opts.num_iters,
+                                                    verbose=opts.verbose,
+                                                    test_on=type_of_test)
+        except ValueError as e:
+            if e.message == ("No valid samples/environments found. Check"
+                             " whether tree tips match otus/taxa present in"
+                             " samples/environments"):
+                raise ValueError(e.message + " and that the otu abundance is"
+                                 " not relative.")
+            raise e
 
-        result = fast_unifrac_permutations_file(tree_in, envs_in,
-                                                weighted=False, num_iters=opts.num_iters, verbose=opts.verbose, test_on=type_of_test)
         envs_in.close()
         os.remove(output_fp)
 

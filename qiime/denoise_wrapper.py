@@ -7,7 +7,7 @@ __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jens Reeder", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
@@ -17,7 +17,7 @@ from re import search
 from itertools import chain
 
 from skbio.parse.sequences import parse_fasta
-from brokit.denoiser import lazy_parse_sff_handle
+from bfillings.denoiser import lazy_parse_sff_handle
 from burrito.util import ApplicationNotFoundError, ApplicationError
 
 from qiime.util import load_qiime_config

@@ -7,14 +7,14 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Justin Kuczynski", "Kyle Patnode",
                "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from random import shuffle
 from numpy import array, mean, append, zeros, asarray
-from skbio.math.stats.spatial import procrustes
-from skbio.math.stats.ordination import OrdinationResults
+from skbio.stats.spatial import procrustes
+from skbio.stats.ordination import OrdinationResults
 
 from qiime.util import create_dir
 
@@ -131,8 +131,8 @@ def get_procrustes_results(coords_f1, coords_f2, sample_id_map=None,
                            get_percent_variation_explained=get_mean_percent_variation):
     """ """
     # Parse the PCoA files
-    ord_res_1 = OrdinationResults.from_file(coords_f1)
-    ord_res_2 = OrdinationResults.from_file(coords_f2)
+    ord_res_1 = OrdinationResults.read(coords_f1)
+    ord_res_2 = OrdinationResults.read(coords_f2)
 
     sample_ids1 = ord_res_1.site_ids
     coords1 = ord_res_1.site
@@ -247,6 +247,16 @@ def procrustes_monte_carlo(coords_f1,
     trial_m_squareds = []
     count_better = 0
     for i in range(trials):
+        try:
+            coords_f1.seek(0)
+        except AttributeError:
+            # we likely have a list of lines
+            pass
+        try:
+            coords_f2.seek(0)
+        except AttributeError:
+            # we likely have a list of lines
+            pass
         # perform the procrustes analysis
         transformed_coords1, transformed_coords2, trial_m_squared, randomized_coords2 =\
             get_procrustes_results(

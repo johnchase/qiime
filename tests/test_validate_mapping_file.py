@@ -4,7 +4,7 @@ __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"  # consider project name
 __credits__ = ["Rob Knight", "William Walters"]  # remember to add yourself
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
 
@@ -16,8 +16,8 @@ from collections import defaultdict
 from tempfile import mkstemp, mkdtemp
 
 from unittest import TestCase, main
-from skbio.util.misc import remove_files
-from skbio.util.misc import create_dir
+from skbio.util import remove_files
+from skbio.util import create_dir
 
 from qiime.check_id_map import (check_mapping_file, process_id_map,
                                 check_data_fields, check_fields_past_bounds, check_chars_data_fields,

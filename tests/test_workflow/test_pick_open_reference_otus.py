@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -17,10 +17,9 @@ from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase, main
 
-from skbio.core.tree import TreeNode
-from skbio.util.misc import remove_files
-from biom import Table
-from biom.util import biom_open
+from skbio.tree import TreeNode
+from skbio.util import remove_files
+from biom import load_table
 
 from qiime.util import load_qiime_config, count_seqs, get_qiime_temp_dir
 from qiime.workflow.util import (call_commands_serially, no_status_updates,
@@ -31,7 +30,7 @@ from qiime.workflow.pick_open_reference_otus import (
     pick_subsampled_open_reference_otus,
     iterative_pick_subsampled_open_reference_otus,
     final_repset_from_iteration_repsets)
-from brokit.sortmerna_v2 import build_database_sortmerna
+from bfillings.sortmerna_v2 import build_database_sortmerna
 
 
 allowed_seconds_per_test = 120
@@ -82,7 +81,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             if exists(d):
                 rmtree(d)
 
-    def test_pick_subsampled_open_reference_otus(self):
+    def test_pick_subsampled_open_reference_otus_step_1_and_4(self):
         """pick_subsampled_open_reference_otus functions as expected
         """
         pick_subsampled_open_reference_otus(
@@ -101,7 +100,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             parallel=False,
             suppress_step4=False,
             logger=None,
-            status_update_callback=no_status_updates)
+            status_update_callback=no_status_updates,
+            minimum_failure_threshold=100000)
         otu_map_w_singletons_fp = '%s/final_otu_map.txt' % self.wf_out
         final_failure_fp = '%s/final_failures.txt' % self.wf_out
         final_repset_fp = '%s/rep_set.fna' % self.wf_out
@@ -138,8 +138,131 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "PyNAST failures file doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
+        for row in otu_table.iter_data(axis='observation'):
+            self.assertTrue(sum(row) >= 2,
+                            "Singleton OTU detected in OTU table.")
+        # number of OTUs in final OTU table equals the number of seequences in
+        # the alignment...
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         count_seqs(aln_fp)[0])
+        # ... and that number is 6
+        self.assertEqual(len(otu_table.ids(axis='observation')), 6)
+
+        # the correct sequences failed the prefilter
+        prefilter_failure_ids = [s.strip()
+                                 for s in open(prefilter_failures_fp, 'U')]
+        self.assertEqual(len(prefilter_failure_ids), 24)
+        self.assertTrue('t1_1' in prefilter_failure_ids)
+        self.assertTrue('p1_2' in prefilter_failure_ids)
+        self.assertTrue('not16S.1_130' in prefilter_failure_ids)
+        self.assertTrue('not16S.1_151' in prefilter_failure_ids)
+
+        # confirm that the new reference sequences is the same length as the
+        # input reference sequences plus the number of new non-singleton otus
+        #
+        self.assertEqual(count_seqs(new_refseqs_fp)[0],
+                         count_seqs(self.test_data['refseqs'][0])[0] +
+                         len([o for o in otu_table.ids(axis='observation')
+                              if o.startswith('wf.test.otu')]) +
+                         count_seqs(pynast_failures_fp)[0])
+
+        # spot check a few of the otus to confirm that we're getting reference
+        # and new otus in the final otu map. This is done on the OTU map
+        # singletons get filtered before building the otu table
+        otu_map = fields_to_dict(open(otu_map_w_singletons_fp))
+        self.assertTrue('295053' in otu_map,
+                        "Reference OTU (295053) is not in the final OTU map.")
+        self.assertTrue('42684' in otu_map,
+                        "Failure OTU (42684) is not in the final OTU map.")
+        self.assertTrue('wf.test.otu.CleanUp.ReferenceOTU0' in otu_map,
+                        "Failure OTU (wf.test.otu.CleanUp.ReferenceOTU0) is not in "
+                        "the final OTU map.")
+
+        # confirm that number of tips in the tree is the same as the number of
+        # sequences in the alignment
+        with open(tree_fp) as f:
+            num_tree_tips = len(list(TreeNode.from_newick(f).tips()))
+        num_align_seqs = count_seqs(aln_fp)[0]
+        self.assertEqual(num_tree_tips, num_align_seqs)
+        self.assertEqual(num_tree_tips, 6)
+
+        # OTU table without singletons or pynast failures has same number of
+        # otus as there are aligned sequences
+        otu_table = load_table(otu_table_fp)
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         num_align_seqs)
+
+        # Reference OTUs have correct taxonomy assignment (can't confirm the )
+        obs_idx = otu_table.index('295053', axis='observation')
+        self.assertEqual(
+            otu_table.metadata(axis='observation')[obs_idx]['taxonomy'],
+            ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria",
+             "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
+        # All observations have 'taxonomy' metadata, and are at least assigned
+        # to 'bacteria'
+        for o in otu_table.iter(axis='observation'):
+            self.assertTrue(
+                o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
+
+    def test_pick_subsampled_open_reference_otus_step_1_through_4(self):
+        """pick_subsampled_open_reference_otus functions as expected
+        """
+        pick_subsampled_open_reference_otus(
+            input_fp=self.test_data['seqs'][0],
+            refseqs_fp=self.test_data['refseqs'][0],
+            output_dir=self.wf_out,
+            percent_subsample=0.5,
+            new_ref_set_id='wf.test.otu',
+            command_handler=call_commands_serially,
+            params=self.params,
+            prefilter_refseqs_fp=None,
+            prefilter_percent_id=0.60,
+            qiime_config=self.qiime_config,
+            step1_otu_map_fp=None,
+            step1_failures_fasta_fp=None,
+            parallel=False,
+            suppress_step4=False,
+            logger=None,
+            status_update_callback=no_status_updates,
+            minimum_failure_threshold=0)
+        otu_map_w_singletons_fp = '%s/final_otu_map.txt' % self.wf_out
+        final_failure_fp = '%s/final_failures.txt' % self.wf_out
+        final_repset_fp = '%s/rep_set.fna' % self.wf_out
+        new_refseqs_fp = '%s/new_refseqs.fna' % self.wf_out
+        prefilter_failures_fp = glob(
+            '%s/prefilter_otus/*_failures.txt' %
+            self.wf_out)[0]
+        tree_fp = '%s/rep_set.tre' % self.wf_out
+        aln_fp = '%s/pynast_aligned_seqs/rep_set_aligned.fasta' % self.wf_out
+        otu_table_fp = ('%s/otu_table_mc2_w_tax_no_pynast_failures.biom'
+                        % self.wf_out)
+        pynast_failures_fp = ('%s/pynast_aligned_seqs/rep_set_failures.fasta'
+                              % self.wf_out)
+
+        self.assertTrue(
+            exists(otu_map_w_singletons_fp),
+            "OTU map doesn't exist")
+        self.assertFalse(exists(final_failure_fp),
+                         "Final failures file shouldn't exist, but it does")
+        self.assertTrue(
+            exists(final_repset_fp),
+            "Final representative set doesn't exist")
+        self.assertTrue(
+            exists(new_refseqs_fp),
+            "New refseqs file doesn't exist")
+        self.assertTrue(
+            exists(prefilter_failures_fp),
+            "Prefilter failures file doesn't exist")
+        self.assertTrue(exists(tree_fp), "Final tree doesn't exist")
+        self.assertTrue(exists(aln_fp), "Final alignment doesn't exist")
+        self.assertTrue(exists(otu_table_fp), "Final BIOM table doesn't exist")
+        self.assertTrue(
+            exists(pynast_failures_fp),
+            "PyNAST failures file doesn't exist")
+
+        # all OTUs in final OTU table occur more than once
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
@@ -190,8 +313,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         self.assertEqual(len(otu_table.ids(axis='observation')),
                          num_align_seqs)
 
@@ -233,7 +355,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             parallel=False,
             suppress_step4=False,
             logger=None,
-            status_update_callback=no_status_updates)
+            status_update_callback=no_status_updates,
+            minimum_failure_threshold=0)
         otu_map_w_singletons_fp = '%s/final_otu_map.txt' % self.wf_out
         final_failure_fp = '%s/final_failures.txt' % self.wf_out
         final_repset_fp = '%s/rep_set.fna' % self.wf_out
@@ -275,8 +398,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "rdp taxonomy assignment result doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
@@ -327,8 +449,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         self.assertEqual(len(otu_table.ids(axis='observation')),
                          num_align_seqs)
 
@@ -365,7 +486,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             logger=None,
             denovo_otu_picking_method='usearch61',
             reference_otu_picking_method='usearch61_ref',
-            status_update_callback=no_status_updates)
+            status_update_callback=no_status_updates,
+            minimum_failure_threshold=0)
         otu_map_w_singletons_fp = '%s/final_otu_map.txt' % self.wf_out
         final_failure_fp = '%s/final_failures.txt' % self.wf_out
         final_repset_fp = '%s/rep_set.fna' % self.wf_out
@@ -402,8 +524,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "PyNAST failures file doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
@@ -453,8 +574,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         self.assertEqual(len(otu_table.ids(axis='observation')),
                          num_align_seqs)
 
@@ -472,7 +592,10 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
     def test_pick_subsampled_open_reference_otus_sortmerna_sumaclust(self):
         """pick_subsampled_open_reference_otus functions as expected with
-        sortmerna and sumaclust (input reference database not indexed) """
+        sortmerna and sumaclust (input reference database not indexed),
+        the minimum_failure_threshold=100000 so steps 2 and 3 are skipped
+        and all failures.fasta from step 1 are directly passed for de novo
+        clustering in step 4 """
         pick_subsampled_open_reference_otus(
             input_fp=self.test_data['seqs'][0],
             refseqs_fp=self.test_data['refseqs'][0],
@@ -491,7 +614,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             logger=None,
             denovo_otu_picking_method='sumaclust',
             reference_otu_picking_method='sortmerna',
-            status_update_callback=no_status_updates)
+            status_update_callback=no_status_updates,
+            minimum_failure_threshold=100000)
         otu_map_w_singletons_fp = '%s/final_otu_map.txt' % self.wf_out
         final_failure_fp = '%s/final_failures.txt' % self.wf_out
         final_repset_fp = '%s/rep_set.fna' % self.wf_out
@@ -531,8 +655,157 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "PyNAST failures file doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
+        for row in otu_table.iter_data(axis='observation'):
+            self.assertTrue(sum(row) >= 2,
+                            "Singleton OTU detected in OTU table.")
+
+        # number of OTUs in final OTU table equals the number of sequences in
+        # the alignment...
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         count_seqs(aln_fp)[0])
+
+        # the correct sequences failed the prefilter (E-value)
+        # reads_for_denovo_ids all passed E-value and are considered
+        # as true rRNA (having <97% id and/or <97% query coverage)
+        reads_for_denovo_ids = [s.strip()
+                                for s in open(reads_for_denovo_fp, 'U')]
+        self.assertEqual(len(reads_for_denovo_ids), 59)
+
+        self.assertTrue('t1_1' not in reads_for_denovo_ids)
+        self.assertTrue('p1_2' not in reads_for_denovo_ids)
+        self.assertTrue('not16S.1_130' not in reads_for_denovo_ids)
+        self.assertTrue('not16S.1_151' not in reads_for_denovo_ids)
+
+        # reads_for_otumap_ids all passed E-value and are considered
+        # as true rRNA (having >=97% id and >=97% query coverage)
+        reads_for_otumap_ids = [seq_id for line in
+                                open(reads_for_otumap_fp, 'U')
+                                for seq_id in line.strip().split('\t')]
+
+        self.assertEqual(len(reads_for_otumap_ids), 120)
+
+        self.assertTrue('t1_1' not in reads_for_otumap_ids)
+        self.assertTrue('p1_2' not in reads_for_otumap_ids)
+        self.assertTrue('not16S.1_130' not in reads_for_otumap_ids)
+        self.assertTrue('not16S.1_151' not in reads_for_otumap_ids)
+
+        # confirm that the new reference sequences is the same length as the
+        # input reference sequences plus the number of new non-singleton otus
+        self.assertEqual(count_seqs(new_refseqs_fp)[0],
+                         count_seqs(self.test_data['refseqs'][0])[0] +
+                         len([o for o in otu_table.ids(axis='observation')
+                              if o.startswith('wf.test.otu')]) +
+                         count_seqs(pynast_failures_fp)[0])
+
+        # spot check a few of the otus to confirm that we're getting reference
+        # and new otus in the final otu map. This is done on the OTU map
+        # singletons get filtered before building the otu table
+        otu_map = fields_to_dict(open(otu_map_w_singletons_fp))
+        self.assertTrue('295053' in otu_map,
+                        "Reference OTU (295053) is not in the final OTU map.")
+        self.assertTrue('42684' in otu_map,
+                        "Failure OTU (42684) is not in the final OTU map.")
+        self.assertTrue('wf.test.otu.CleanUp.ReferenceOTU0' in otu_map,
+                        "Failure OTU (wf.test.otu.CleanUp.ReferenceOTU0) is not in "
+                        "the final OTU map.")
+        self.assertTrue('wf.test.otu.CleanUp.ReferenceOTU5' in otu_map,
+                        "Failure OTU (wf.test.otu.CleanUp.ReferenceOTU5) is not in "
+                        "the final OTU map.")
+
+        # confirm size of full OTU map
+        self.assertTrue(len(otu_map), 9)
+
+        # confirm that number of tips in the tree is the same as the number of
+        # sequences in the alignment
+        num_tree_tips = len(list(TreeNode.from_newick(open(tree_fp)).tips()))
+        num_align_seqs = count_seqs(aln_fp)[0]
+        self.assertEqual(num_tree_tips, num_align_seqs)
+
+        # OTU table without singletons or pynast failures has same number of
+        # otus as there are aligned sequences
+        otu_table = load_table(otu_table_fp)
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         num_align_seqs)
+
+        # Reference OTUs have correct taxonomy assignment (can't confirm the )
+        obs_idx = otu_table.index('295053', axis='observation')
+        self.assertEqual(
+            otu_table.metadata(axis='observation')[obs_idx]['taxonomy'],
+            ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria",
+             "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
+        # All observations have 'taxonomy' metadata, and are at least assigned
+        # to 'bacteria'
+        for o in otu_table.iter(axis='observation'):
+            self.assertTrue(
+                o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
+
+    def test_pick_subsampled_open_reference_otus_sortmerna_sumaclust_step2_3(self):
+        """pick_subsampled_open_reference_otus functions as expected with
+        sortmerna and sumaclust (input reference database not indexed),
+        minimum_failure_threshold=0 and percent_subsample=0.7, so a non-empty
+        subsampled_failures.fasta file is created in step 1 and passed to steps 2/3/4
+        for analysis. """
+        pick_subsampled_open_reference_otus(
+            input_fp=self.test_data['seqs'][0],
+            refseqs_fp=self.test_data['refseqs'][0],
+            output_dir=self.wf_out,
+            percent_subsample=0.7,
+            new_ref_set_id='wf.test.otu',
+            command_handler=call_commands_serially,
+            params=self.params,
+            prefilter_refseqs_fp=None,
+            prefilter_percent_id=None,
+            qiime_config=self.qiime_config,
+            step1_otu_map_fp=None,
+            step1_failures_fasta_fp=None,
+            parallel=False,
+            suppress_step4=False,
+            logger=None,
+            denovo_otu_picking_method='sumaclust',
+            reference_otu_picking_method='sortmerna',
+            status_update_callback=no_status_updates,
+            minimum_failure_threshold=0)
+        otu_map_w_singletons_fp = '%s/final_otu_map.txt' % self.wf_out
+        final_failure_fp = '%s/final_failures.txt' % self.wf_out
+        final_repset_fp = '%s/rep_set.fna' % self.wf_out
+        new_refseqs_fp = '%s/new_refseqs.fna' % self.wf_out
+        reads_for_denovo_fp = glob(
+            '%s/step1_otus/*_failures.txt' %
+            self.wf_out)[0]
+        reads_for_otumap_fp = glob(
+            '%s/step1_otus/*_otus.txt' %
+            self.wf_out)[0]
+        tree_fp = '%s/rep_set.tre' % self.wf_out
+        aln_fp = '%s/pynast_aligned_seqs/rep_set_aligned.fasta' % self.wf_out
+        otu_table_fp = ('%s/otu_table_mc2_w_tax_no_pynast_failures.biom'
+                        % self.wf_out)
+        pynast_failures_fp = ('%s/pynast_aligned_seqs/rep_set_failures.fasta'
+                              % self.wf_out)
+
+        self.assertTrue(
+            exists(otu_map_w_singletons_fp),
+            "OTU map doesn't exist")
+        self.assertFalse(exists(final_failure_fp),
+                         "Final failures file shouldn't exist, but it does")
+        self.assertTrue(
+            exists(final_repset_fp),
+            "Final representative set doesn't exist")
+        self.assertTrue(
+            exists(new_refseqs_fp),
+            "New refseqs file doesn't exist")
+        self.assertTrue(
+            exists(reads_for_denovo_fp),
+            "Denovo reads file doesn't exist")
+        self.assertTrue(exists(tree_fp), "Final tree doesn't exist")
+        self.assertTrue(exists(aln_fp), "Final alignment doesn't exist")
+        self.assertTrue(exists(otu_table_fp), "Final BIOM table doesn't exist")
+        self.assertTrue(
+            exists(pynast_failures_fp),
+            "PyNAST failures file doesn't exist")
+
+        # all OTUs in final OTU table occur more than once
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
@@ -584,8 +857,11 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         self.assertTrue('42684' in otu_map,
                         "Failure OTU (42684) is not in the final OTU map.")
         self.assertTrue('wf.test.otu.ReferenceOTU0' in otu_map,
-                        "Failure OTU (wf.test.otu.ReferenceOTU0) is not in "
+                        "Failure OTU (wf.test.otu.ReferenceOTU0) is in "
                         "the final OTU map.")
+
+        # confirm size of full OTU map
+        self.assertTrue(len(otu_map), 11)
 
         # confirm that number of tips in the tree is the same as the number of
         # sequences in the alignment
@@ -595,8 +871,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         self.assertEqual(len(otu_table.ids(axis='observation')),
                          num_align_seqs)
 
@@ -644,7 +919,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             logger=None,
             denovo_otu_picking_method='sumaclust',
             reference_otu_picking_method='sortmerna',
-            status_update_callback=no_status_updates)
+            status_update_callback=no_status_updates,
+            minimum_failure_threshold=0)
         otu_map_w_singletons_fp = '%s/final_otu_map.txt' % self.wf_out
         final_failure_fp = '%s/final_failures.txt' % self.wf_out
         final_repset_fp = '%s/rep_set.fna' % self.wf_out
@@ -684,8 +960,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "PyNAST failures file doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
@@ -748,8 +1023,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         self.assertEqual(len(otu_table.ids(axis='observation')),
                          num_align_seqs)
 
@@ -847,7 +1121,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             parallel=False,
             suppress_step4=False,
             logger=None,
-            status_update_callback=no_status_updates)
+            status_update_callback=no_status_updates,
+            minimum_failure_threshold=0)
 
         prefilter_output_directory = '%s/prefilter_otus/'
         self.assertFalse(exists(prefilter_output_directory))
@@ -882,8 +1157,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "PyNAST failures file doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
@@ -935,8 +1209,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         self.assertEqual(len(otu_table.ids(axis='observation')),
                          num_align_seqs)
 
@@ -972,7 +1245,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             parallel=True,
             suppress_step4=False,
             logger=None,
-            status_update_callback=no_status_updates)
+            status_update_callback=no_status_updates,
+            minimum_failure_threshold=0)
         otu_map_w_singletons_fp = '%s/final_otu_map.txt' % self.wf_out
         final_failure_fp = '%s/final_failures.txt' % self.wf_out
         final_repset_fp = '%s/rep_set.fna' % self.wf_out
@@ -1009,8 +1283,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "PyNAST failures file doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
@@ -1061,8 +1334,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         self.assertEqual(len(otu_table.ids(axis='observation')),
                          num_align_seqs)
 
@@ -1097,7 +1369,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             parallel=False,
             suppress_step4=True,
             logger=None,
-            status_update_callback=no_status_updates)
+            status_update_callback=no_status_updates,
+            minimum_failure_threshold=0)
 
         step4_output_dir = '%s/step4_otus/' % self.wf_out
         self.assertFalse(exists(step4_output_dir),
@@ -1140,8 +1413,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "PyNAST failures file doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
@@ -1196,8 +1468,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         self.assertEqual(len(otu_table.ids(axis='observation')),
                          num_align_seqs)
 
@@ -1235,7 +1506,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                           parallel=False,
                           suppress_step4=False,
                           logger=None,
-                          status_update_callback=no_status_updates)
+                          status_update_callback=no_status_updates,
+                          minimum_failure_threshold=0)
 
     def test_iterative_pick_subsampled_open_reference_otus_no_prefilter(self):
         """pick_subsampled_open_reference_otus functions as expected without
@@ -1257,7 +1529,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             parallel=False,
             suppress_step4=False,
             logger=None,
-            status_update_callback=no_status_updates)
+            status_update_callback=no_status_updates,
+            minimum_failure_threshold=0)
 
         for i in (0, 1):
             final_otu_map_fp = '%s/%d/final_otu_map.txt' % (self.wf_out, i)
@@ -1298,8 +1571,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                         "Iteration 1 OTU map with singletons doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
@@ -1398,7 +1670,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             parallel=False,
             suppress_step4=False,
             logger=None,
-            status_update_callback=no_status_updates)
+            status_update_callback=no_status_updates,
+            minimum_failure_threshold=0)
 
         for i in (0, 1):
             final_otu_map_fp = '%s/%d/final_otu_map.txt' % (self.wf_out, i)
@@ -1439,8 +1712,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                         "Iteration 1 OTU map with singletons doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
@@ -1481,12 +1753,12 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # OTU from first iteration is in final map
         self.assertTrue('wf.test.otu.0.ReferenceOTU0' in otu_map,
                         "Failure OTU (wf.test.otu.ReferenceOTU0) is not in the"
-                        " final OTU map.")
+                        " final OTU map (first iteration).")
         # OTU from second iteration is in final map
         otu_map = fields_to_dict(open(iter1_otu_map_w_singletons))
         self.assertTrue('wf.test.otu.1.ReferenceOTU0' in otu_map,
                         "Failure OTU (wf.test.otu.ReferenceOTU0) is not in the"
-                        " final OTU map.")
+                        " final OTU map (second iteration).")
 
         # OTUs from each iteration are in the final OTU table
         self.assertTrue('295053' in otu_table.ids(axis='observation'))
@@ -1539,7 +1811,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             parallel=True,
             suppress_step4=False,
             logger=None,
-            status_update_callback=no_status_updates)
+            status_update_callback=no_status_updates,
+            minimum_failure_threshold=0)
 
         for i in (0, 1):
             final_otu_map_fp = '%s/%d/final_otu_map.txt' % (self.wf_out, i)
@@ -1580,8 +1853,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                         "Iteration 1 OTU map with singletons doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")

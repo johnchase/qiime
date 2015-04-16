@@ -5,7 +5,7 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
@@ -20,7 +20,7 @@ from qiime.format import format_mapping_file
 from qiime.group import get_all_grouped_distances, get_grouped_distances
 from qiime.colors import matplotlib_rgb_color
 from qiime.parse import parse_distmat, parse_mapping_file
-from skbio.draw.distributions import boxplots
+from skbio.draw import boxplots
 from qiime.util import MetadataMap
 
 SORT_TYPES = ('median', 'alphabetical')

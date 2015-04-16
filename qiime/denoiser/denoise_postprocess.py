@@ -5,7 +5,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 # remember to add yourself if you make changes
 __credits__ = ["Jens Reeder", "Rob Knight"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 
@@ -13,7 +13,7 @@ from optparse import OptionParser
 from itertools import imap
 from re import compile, search
 
-from skbio.core.sequence import BiologicalSequence
+from skbio.sequence import BiologicalSequence
 from skbio.parse.sequences import parse_fasta
 
 from qiime.denoiser.utils import read_denoiser_mapping, sort_ids

@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Michael Dwan", "Logan Knecht",
                "Damien Coy", "Levi McCracken"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
@@ -130,7 +130,7 @@ class CompareDistanceMatricesTests(TestCase):
         self.assertRaises(ValueError, run_mantel_test, 'mantel',
                           [self.fp1,
                               self.fp2], [
-                              self.dm1], self.num_perms, 'two sided',
+                              self.dm1], self.num_perms, 'two-sided',
                           None, self.alpha)
 
     def test_run_mantel_test_bad_method(self):
@@ -138,14 +138,14 @@ class CompareDistanceMatricesTests(TestCase):
         self.assertRaises(ValueError, run_mantel_test, 'foo',
                           [self.fp1, self.fp2], [self.dm1,
                                                  self.dm2], self.num_perms,
-                          'two sided', None, self.alpha)
+                          'two-sided', None, self.alpha)
 
     def test_run_mantel_test_no_cdm(self):
         """Test running partial mantel test with no control dm."""
         self.assertRaises(ValueError, run_mantel_test, 'partial_mantel',
                           [self.fp1, self.fp2], [self.dm1,
                                                  self.dm2], self.num_perms,
-                          'two sided', self.comment, self.alpha)
+                          'two-sided', self.comment, self.alpha)
 
     def test_run_mantel_test_partial_mantel(self):
         """Test running partial mantel test with two dms and a control dm."""

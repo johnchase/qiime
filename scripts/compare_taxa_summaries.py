@@ -5,12 +5,12 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
 from os.path import basename, join
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 from qiime.parse import parse_sample_id_map, parse_taxa_summary_table
 from qiime.util import (add_filename_suffix, parse_command_line_parameters,
                         get_options_lookup, make_option)

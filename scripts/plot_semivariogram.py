@@ -4,9 +4,9 @@ from __future__ import division
 
 __author__ = "Antonio Gonzalez Pena"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Antonio Gonzalez Pena, Kyle Patnode", "Yoshiki Vazquez-Baeza"]
+__credits__ = ["Antonio Gonzalez Pena", "Kyle Patnode", "Yoshiki Vazquez-Baeza"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
 
@@ -26,6 +26,7 @@ from numpy import asarray
 import os
 from os.path import splitext
 from StringIO import StringIO
+from copy import deepcopy
 
 options_lookup = get_options_lookup()
 
@@ -252,16 +253,26 @@ def main():
             color=opts.line_color,
             alpha=opts.line_alpha)
     else:
+        # not all the categories that are going to be enumerated are found in
+        # the distance matrices i.e. the mapping file is a superset that can
+        # contain more samples than the distance matrices
+        used_categories = deepcopy(categories)
+
         for index, single_category in enumerate(categories):
             good_sample_ids = sample_ids_from_metadata_description(
                 open(mapping_fp), '%s:%s' % (category, single_category))
 
-            _y_samples, _y_distmtx = parse_distmat(StringIO(
-                filter_samples_from_distance_matrix((y_samples, y_distmtx),
-                                                    good_sample_ids, negate=True)))
-            _x_samples, _x_distmtx = parse_distmat(StringIO(
-                filter_samples_from_distance_matrix((x_samples, x_distmtx),
-                                                    good_sample_ids, negate=True)))
+            try:
+                _y_samples, _y_distmtx = parse_distmat(StringIO(
+                    filter_samples_from_distance_matrix((y_samples, y_distmtx),
+                                                        good_sample_ids, negate=True)))
+                _x_samples, _x_distmtx = parse_distmat(StringIO(
+                    filter_samples_from_distance_matrix((x_samples, x_distmtx),
+                                                        good_sample_ids, negate=True)))
+            except ValueError:
+                # no samples found for this category
+                used_categories.remove(single_category)
+                continue
 
             x_val, y_val, x_fit, y_fit, func_text = fit_semivariogram(
                 (_x_samples, _x_distmtx), (_y_samples, _y_distmtx),
@@ -277,10 +288,20 @@ def main():
             plot(x_fit, y_fit, linewidth=2.0, color=color_only,
                  alpha=opts.line_alpha, label=single_category)
 
-    if opts.x_min is not None and opts.x_max is not None:
-        xlim([opts.x_min, opts.x_max])
-    if opts.y_min is not None and opts.y_max is not None:
-        ylim([opts.y_min, opts.y_max])
+    # set plot limits if requested
+    x_lb, x_ub = xlim()
+    y_lb, y_ub = ylim()
+    if opts.x_min is not None:
+        x_lb = opts.x_min
+    if opts.x_max is not None:
+        x_ub = opts.x_max
+    if opts.y_min is not None:
+        y_lb = opts.y_min
+    if opts.y_max is not None:
+        y_ub = opts.y_max
+    xlim(x_lb, x_ub)
+    ylim(y_lb, y_ub)
+
 
     x_label = opts.x_label
     y_label = opts.y_label
@@ -305,7 +326,7 @@ def main():
 
         if extension == '':
             extension = 'png'
-        make_legend(categories, colors_used, 0, 0, 'black', 'white',
+        make_legend(used_categories, colors_used, 0, 0, 'black', 'white',
                     opts.output_path, extension, 80)
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -49,7 +49,7 @@ script_info['required_options'] = [
 
 ]
 script_info['optional_options'] = [
-    make_option('-n', '--num-reps', dest='num_reps', default=10, type=int,
+    make_option('-n', '--num_reps', dest='num_reps', default=10, type=int,
                 help='num iterations at each seqs/sample level [default: %default]'),
     make_option(
         '--suppress_lineages_included', default=False, action="store_true",
@@ -92,7 +92,7 @@ def main():
                     params,
                     job_prefix=opts.job_prefix,
                     poll_directly=opts.poll_directly,
-                    suppress_submit_jobs=False)
+                    suppress_submit_jobs=opts.suppress_submit_jobs)
 
 
 if __name__ == "__main__":

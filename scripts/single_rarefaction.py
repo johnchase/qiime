@@ -6,13 +6,13 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
 from functools import partial
 
-from skbio.math.subsample import subsample
+from skbio.stats import subsample
 
 from qiime.util import parse_command_line_parameters
 from qiime.util import make_option

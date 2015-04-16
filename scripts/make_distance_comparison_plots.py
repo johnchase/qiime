@@ -5,14 +5,14 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
 from os.path import join
 from string import strip
-from skbio.util.misc import create_dir
-from skbio.draw.distributions import grouped_distributions
+from skbio.util import create_dir
+from skbio.draw import grouped_distributions
 from qiime.colors import data_colors, data_color_order
 from qiime.group import get_field_state_comparisons
 from qiime.colors import matplotlib_rgb_color

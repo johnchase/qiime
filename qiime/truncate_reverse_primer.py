@@ -6,14 +6,14 @@ __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["William Walters", "Emily TerAvest"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
 
 from os.path import join, basename
 
 from skbio.parse.sequences import parse_fasta
-from skbio.core.sequence import DNA
+from skbio.sequence import DNA
 
 from qiime.split_libraries import local_align_primer_seq
 from qiime.check_id_map import process_id_map

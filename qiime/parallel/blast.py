@@ -5,13 +5,13 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
 from os.path import split, splitext
 
-from brokit.formatdb import build_blast_db_from_fasta_path
+from bfillings.formatdb import build_blast_db_from_fasta_path
 
 from qiime.util import load_qiime_config, get_options_lookup
 from qiime.parallel.util import ParallelWrapper

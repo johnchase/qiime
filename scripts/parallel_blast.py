@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Jai Ram Rideout", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -15,7 +15,7 @@ from os import makedirs, system
 from os.path import exists, split, splitext, isfile
 from subprocess import check_call, CalledProcessError
 
-from brokit.formatdb import build_blast_db_from_fasta_path
+from bfillings.formatdb import build_blast_db_from_fasta_path
 
 from qiime.util import parse_command_line_parameters
 from qiime.util import make_option
@@ -112,7 +112,7 @@ def main():
                     params,
                     job_prefix=opts.job_prefix,
                     poll_directly=opts.poll_directly,
-                    suppress_submit_jobs=False)
+                    suppress_submit_jobs=opts.suppress_submit_jobs)
 
 
 if __name__ == "__main__":

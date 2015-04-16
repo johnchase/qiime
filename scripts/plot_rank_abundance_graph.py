@@ -6,11 +6,10 @@ __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jens Reeder", "Adam Robbins-Pianka"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
-from biom.parse import parse_biom_table
 from biom import load_table
 
 from qiime.util import make_option
@@ -69,7 +68,7 @@ script_info['optional_options'] = [
     make_option('-a', '--absolute_counts', help='plot absolute abundance '
                 'values instead of relative [default: %default]',
                 action='store_true', default=False),
-    make_option('-n', '--no-legend', action='store_true', default=False,
+    make_option('-n', '--no_legend', action='store_true', default=False,
                 help='do not draw a legend [default: %default]'),
     make_option('-x', '--x_linear_scale', help='draw x axis in linear scale '
                 '[default: %default]', action='store_true', default=False),

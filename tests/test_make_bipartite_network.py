@@ -6,14 +6,14 @@ __author__ = "Will Van Treuren"
 __copyright__ = "Copyright 2013, The QIIME project"
 __credits__ = ["Will Van Treuren"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Will Van Treuren"
 __email__ = "wdwvt1@gmail.com"
 
 
 from shutil import rmtree
 from os.path import exists, join
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 
 from qiime.util import get_qiime_temp_dir
 from unittest import TestCase, main

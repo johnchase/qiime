@@ -6,13 +6,13 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Antonio Gonzalez Pena"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from os.path import split, splitext
 from skbio.parse.sequences import parse_fasta
-from skbio.core.sequence import DNA
+from skbio.sequence import DNA
 
 usage_str = """usage: %prog [options] {-i INPUT_FASTA_FP}
 

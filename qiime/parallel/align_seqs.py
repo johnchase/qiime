@@ -6,11 +6,11 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from brokit.formatdb import build_blast_db_from_fasta_path
+from bfillings.formatdb import build_blast_db_from_fasta_path
 
 from qiime.align_seqs import compute_min_alignment_length
 from qiime.parallel.util import ParallelWrapper

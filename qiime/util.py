@@ -8,7 +8,7 @@ __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
                "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza",
                "Will Van Treuren", "Adam Robbins-Pianka"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -37,25 +37,27 @@ from numpy import (array, zeros, shape, vstack, ndarray, asarray,
 from numpy.ma import MaskedArray
 from numpy.ma.extras import apply_along_axis
 
-from biom.util import compute_counts_per_sample_stats, biom_open
+from biom.util import compute_counts_per_sample_stats, biom_open, HAVE_H5PY
 from biom import load_table
-from biom.parse import parse_biom_table
 from biom.table import Table
 
 from cogent.parse.tree import DndParser
 from cogent.cluster.procrustes import procrustes
 
-from skbio.util.misc import remove_files, create_dir
+from skbio.util import remove_files, create_dir
 from skbio.format.sequences import format_fastq_record
 from burrito.util import ApplicationError, CommandLineApplication, FilePath
 from burrito.util import which
-from skbio.core.sequence import DNASequence
+from skbio.sequence import DNASequence
 from skbio.parse.sequences import parse_fasta
 from skbio.parse.sequences import FastaIterator, FastqIterator
 
-from brokit.blast import Blastall, BlastResult
-from brokit.formatdb import (build_blast_db_from_fasta_path,
-                             build_blast_db_from_fasta_file)
+from bfillings.blast import Blastall, BlastResult
+from bfillings.formatdb import (build_blast_db_from_fasta_path,
+    build_blast_db_from_fasta_file)
+from qiime_default_reference import (get_template_alignment,
+    get_reference_sequences, get_reference_taxonomy,
+    get_template_alignment_column_mask)
 
 
 from qcli import make_option, qcli_system_call, parse_command_line_parameters
@@ -76,6 +78,12 @@ from qiime.parse import (parse_qiime_config_files,
 # which has the same interface as the former
 # qiime.util.compute_seqs_per_library_stats
 compute_seqs_per_library_stats = compute_counts_per_sample_stats
+
+# add a support message to script-raised errors
+parse_command_line_parameters = partial(parse_command_line_parameters,
+                                        error_suffix="\nIf you need help with "
+                                                     "QIIME, see:\nhttp://help"
+                                                     ".qiime.org\n")
 
 
 class TreeMissingError(IOError):
@@ -329,8 +337,23 @@ def load_qiime_config():
         if exists(qiime_config_filepath):
             qiime_config_files.append(open(qiime_config_filepath))
 
-    return parse_qiime_config_files(qiime_config_files)
+    qiime_config = parse_qiime_config_files(qiime_config_files)
 
+    # For files that are defined in the qiime-default-reference package,
+    # add values to the qiime_config if they haven't already been defined.
+    qiime_config['pick_otus_reference_seqs_fp'] = \
+        qiime_config['pick_otus_reference_seqs_fp'] or get_reference_sequences()
+
+    qiime_config['pynast_template_alignment_fp'] = \
+        qiime_config['pynast_template_alignment_fp'] or get_template_alignment()
+
+    qiime_config['assign_taxonomy_reference_seqs_fp'] = \
+        qiime_config['assign_taxonomy_reference_seqs_fp'] or get_reference_sequences()
+
+    qiime_config['assign_taxonomy_id_to_taxonomy_fp'] = \
+        qiime_config['assign_taxonomy_id_to_taxonomy_fp'] or get_reference_taxonomy()
+
+    return qiime_config
 
 def qiime_blast_seqs(seqs,
                      blast_constructor=Blastall,
@@ -506,22 +529,33 @@ def get_generated_by_for_biom_tables():
     return "QIIME " + get_qiime_library_version()
 
 
-def write_biom_table(biom_table, biom_table_fp, compress=True):
+def write_biom_table(biom_table, biom_table_fp, compress=True,
+                     write_hdf5=HAVE_H5PY):
     """Writes a BIOM table to the specified filepath
 
     Parameters
     ----------
     biom_table : biom.Table
         The table object to write out
-    biom_tabl_fp : str
+    biom_table_fp : str
         The path to the output file
     compress : bool, optional
         Defaults to ``True``. If True, built-in compression on the output HDF5
-        file will be enabled
+        file will be enabled. This option is only relevant if ``write_hdf5`` is
+        ``True``.
+    write_hdf5 : bool, optional
+        Defaults to ``True`` if H5PY is installed and to ``False`` if H5PY is
+        not installed. If ``True`` the output biom table will be written as an
+        HDF5 binary file, otherwise it will be a JSON string.
     """
-    with biom_open(biom_table_fp, 'w') as biom_file:
-        biom_table.to_hdf5(biom_file, get_generated_by_for_biom_tables(),
-                           compress)
+    generated_by = get_generated_by_for_biom_tables()
+
+    if write_hdf5:
+        with biom_open(biom_table_fp, 'w') as biom_file:
+            biom_table.to_hdf5(biom_file, generated_by, compress)
+    else:
+        with open(biom_table_fp, 'w') as biom_file:
+            biom_table.to_json(generated_by, biom_file)
 
 
 def split_sequence_file_on_sample_ids_to_files(seqs,
@@ -1312,7 +1346,7 @@ def count_seqs_in_filepaths(fasta_filepaths, seq_counter=count_seqs):
         # if the file is actually fastq, use the fastq parser.
         # otherwise use the fasta parser
         if fasta_filepath.endswith('.fastq'):
-            parser = parse_fastq
+            parser = partial(parse_fastq, enforce_qual_range=False)
         elif fasta_filepath.endswith('.tre') or \
                 fasta_filepath.endswith('.ph') or \
                 fasta_filepath.endswith('.ntree'):
@@ -1499,60 +1533,6 @@ def subsample_fasta(input_fasta_fp,
     output_fasta.close()
 
 
-def subsample_fastq(input_fastq_fp,
-                    output_fp,
-                    percent_subsample):
-    """ Writes random percent_sample of sequences from input fastq filepath
-
-    input_fastq_fp: input fastq filepath
-    output_fp: output fasta filepath
-    percent_subsample: percent of sequences to write
-    """
-
-    input_fastq = open(input_fastq_fp, "U")
-    output_fastq = open(output_fp, "w")
-
-    for label, seq, qual in parse_fastq(input_fastq, strict=False):
-        if random() < percent_subsample:
-            output_fastq.write(
-                '@%s\n%s\n+%s\n%s\n' %
-                (label, seq, label, qual))
-
-    input_fastq.close()
-    output_fastq.close()
-
-
-def subsample_fastqs(input_fastq1_fp,
-                     output_fastq1_fp,
-                     input_fastq2_fp,
-                     output_fastq2_fp,
-                     percent_subsample):
-    """ Writes random percent_sample of sequences from input fastq filepath
-    """
-
-    input_fastq1 = open(input_fastq1_fp, "U")
-    output_fastq1 = open(output_fastq1_fp, "w")
-    input_fastq2 = open(input_fastq2_fp, "U")
-    output_fastq2 = open(output_fastq2_fp, "w")
-
-    for fastq1, fastq2 in izip(parse_fastq(input_fastq1, strict=False),
-                               parse_fastq(input_fastq2, strict=False)):
-        label1, seq1, qual1 = fastq1
-        label2, seq2, qual2 = fastq2
-        if random() < percent_subsample:
-            output_fastq1.write(
-                '@%s\n%s\n+%s\n%s\n' %
-                (label1, seq1, label1, qual1))
-            output_fastq2.write(
-                '@%s\n%s\n+%s\n%s\n' %
-                (label2, seq2, label2, qual2))
-
-    input_fastq1.close()
-    output_fastq1.close()
-    input_fastq2.close()
-    output_fastq2.close()
-
-
 def summarize_otu_sizes_from_otu_map(otu_map_f):
     """ Given an otu map file handle, summarizes the sizes of the OTUs
 
@@ -1694,6 +1674,10 @@ class MetadataMap():
             # skip the SampleID required header, since we get that from the
             # dict we are currently iterating over
             for header in self.req_header_prefix[1:]:
+                if header not in data:
+                    raise ValueError(
+                        "Metadata mapping file is missing required column %r."
+                        % header)
                 current_data.append(data[header])
 
             # Get the optional columns; allow for None in these columns
@@ -1705,6 +1689,10 @@ class MetadataMap():
 
             # get the last required columns
             for header in self.req_header_suffix:
+                if header not in data:
+                    raise ValueError(
+                        "Metadata mapping file is missing required column %r."
+                        % header)
                 current_data.append(data[header])
 
             output_lines.append('\t'.join([str(x) for x in current_data]))
@@ -1879,8 +1867,11 @@ class MetadataMap():
             extra_samples = set(sample_ids_to_keep) - set(self.sample_ids)
 
             if extra_samples:
-                raise ValueError("Could not find the following sample IDs in "
-                                 "metadata map: %s" % ', '.join(extra_samples))
+                extra_samples_formatted = ', '.join(
+                    map(lambda e: '"%s"' % e, extra_samples))
+                raise ValueError(
+                    "Could not find the following sample ID(s) in the "
+                    "metadata mapping file: %s" % extra_samples_formatted)
 
 
 class RExecutor(CommandLineApplication):
@@ -1914,26 +1905,11 @@ class RExecutor(CommandLineApplication):
         """
         return help_str
 
-    def __call__(self, command_args, script_name, output_dir=None,
-                 verbose=False):
+    def __call__(self, command_args, script_name, verbose=False):
         """Run the specified r script using the commands_args
 
             returns a CommandLineAppResult object
         """
-        input_handler = self.InputHandler
-        suppress_stdout = self.SuppressStdout
-        suppress_stderr = self.SuppressStderr
-        if suppress_stdout:
-            outfile = devnull
-        else:
-            outfilepath = FilePath(join(self.TmpDir, 'R.stdout'))
-            outfile = open(outfilepath, 'w')
-        if suppress_stderr:
-            errfile = devnull
-        else:
-            errfilepath = FilePath(join(self.TmpDir, 'R.stderr'))
-            errfile = open(errfilepath, 'w')
-
         self._R_script = script_name
         rscript = self._get_R_script_path()
         base_command = self._get_base_command()
@@ -1951,36 +1927,27 @@ class RExecutor(CommandLineApplication):
         )
 
         if self.HaltExec:
-            raise AssertionError("Halted exec with command:\n" + command)
+            raise AssertionError("Halted exec with command:\n%s" % command)
 
-        # run command, wait for output, get exit status
-        proc = Popen(command, shell=True, stdout=outfile, stderr=errfile)
-        proc.wait()
-        exit_status = proc.returncode
+        # run command
+        stdout, stderr, exit_status = qiime_system_call(command, shell=True)
 
         # Determine if error should be raised due to exit status of
         # appliciation
         if not self._accept_exit_status(exit_status):
             if exit_status == 2:
-                raise ApplicationError('R library not installed: \n' +
-                                       ''.join(open(errfilepath, 'r').readlines()) + '\n')
+                raise ApplicationError(
+                    'R library not installed:\nstdout:\n%s\nstderr:\n%s\n' %
+                    (stdout, stderr))
             else:
-                raise ApplicationError('Unacceptable application exit status: %s, command: %s'
-                                       % (str(exit_status), command) +
-                                       ' Program output: \n\n%s\n'
-                                       % (''.join(open(errfilepath, 'r').readlines())))
-        # open the stdout and stderr if not being suppressed
-        out = None
-        if not suppress_stdout:
-            out = open(outfilepath, "r")
-        err = None
-        if not suppress_stderr:
-            err = open(errfilepath, "r")
+                raise ApplicationError(
+                    'Unacceptable application exit status: %d\ncommand: %s\n'
+                    'stdout:\n%s\nstderr:\n%s\n' %
+                    (exit_status, command, stdout, stderr))
+
         if verbose:
-            msg = '\n\nCommand Executed: %s' % command + \
-                  ' \n\nR Command Output:\n%s' % \
-                  (''.join(open(errfilepath, 'r').readlines()))
-            print(msg)
+            print ('Command: %s\nstdout:\n%s\nstderr:\n%s\n' %
+                   (command, stdout, stderr))
 
     # The methods below were taken from supervised_learning.py
     def _get_R_script_dir(self):
@@ -2087,7 +2054,7 @@ def sync_biom_and_mf(pmf, bt):
 
     Inputs:
      pmf - parsed mapping file from parse_mapping_file_to_dict (nested dict).
-     bt - parse biom table from parse_biom_table (biom table object).
+     bt - biom table object.
     Outputs are a bt and pmf that contain only shared samples and a set of
     samples that are not shared. If no samples are unshared this final output
     will be an empty set.

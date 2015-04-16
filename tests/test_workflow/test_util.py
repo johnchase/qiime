@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Kyle Bittinger", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -16,7 +16,7 @@ from os.path import exists, join, getsize
 from tempfile import mkdtemp
 
 from unittest import TestCase, main
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from qiime.util import load_qiime_config, get_qiime_temp_dir
 from qiime.parse import parse_qiime_parameters
 from qiime.test import (initiate_timeout,

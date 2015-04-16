@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 # remember to add yourself if you make changes
 __credits__ = ["Jens Reeder", "Rob Knight", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 
@@ -19,7 +19,7 @@ from os import close
 
 from qiime.util import FileFormatError
 from skbio.parse.sequences import parse_fasta
-from brokit.denoiser import Flowgram
+from bfillings.denoiser import Flowgram
 
 from qiime.denoiser.utils import cat_sff_files, write_sff_header
 

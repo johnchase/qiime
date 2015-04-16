@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 # remember to add yourself if you make changes
 __credits__ = ["Dan Knights", "Luke Ursell"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
 
@@ -20,7 +20,7 @@ from tempfile import NamedTemporaryFile, mkdtemp, mkstemp
 from unittest import TestCase, main
 from burrito.util import ApplicationError
 
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from qiime.supervised_learning import (
     run_supervised_learning, pooled_standard_deviation,
     calc_baseline_error_to_observed_error)

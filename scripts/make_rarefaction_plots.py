@@ -4,9 +4,10 @@ from __future__ import division
 
 __author__ = "Meg Pirrung"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Meg Pirrung", "Jesse Stombaugh", "John Chase"]
+__credits__ = ["Meg Pirrung", "Jesse Stombaugh", "John Chase",
+               "Jai Ram Rideout", "Evan Bolyen"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 
@@ -51,10 +52,18 @@ script_info['script_usage'].append(("""Set Background Color:""",
 script_info[
     'script_usage'].append(("""Generate raw data without interactive webpages:""",
                             "The user can choose to not create an interactive webpage ('-w' option). "
-                            "This is for the case, where the user just wants the average plots and the"
+                            "This is for the case, where the user just wants the average plots and the "
                             "raw average data.",
                             """%prog -i alpha_div_collated/ -m Fasting_Map.txt -w"""))
 
+script_info[
+    'script_usage'].append(("""Generate average tables and per-sample plots:""",
+                            "Pass --generate_average_tables and "
+                            "--generate_per_sample_plots to generate average "
+                            "tables of results as tab-separated text and "
+                            "per-sample plots for each of the metadata "
+                            "categories",
+                            """%prog -i alpha_div_collated/ -m Fasting_Map.txt --generate_average_tables --generate_per_sample_plots"""))
 
 script_info[
     'output_description'] = """The result of this script produces a folder and within that folder there is a sub-folder containing image files. Within the main folder, there is an html file."""
@@ -109,12 +118,12 @@ script_info['optional_options'] = [
     options_lookup['output_dir'],
     make_option('--output_type', default='file_creation', type="choice",
                 help='Write the HTML output as one file, images embedded, or several. Options' +
-                ' are file_creation, multiple files, and memory. [default: %default]',
+                ' are "file_creation" and "memory". [default: %default]',
                 choices=['file_creation', 'memory']),
     make_option('--generate_per_sample_plots', action='store_true', help='generate per '
                 'sample plots for each of the metadata categories. This will allow you to '
-                'show/hide samples from the plots but will required a larger processing '
-                'time. In general, this practice is useful only for small datasets. '
+                'show/hide samples from the plots but will require a longer processing '
+                'time. In general, this option is useful only for small datasets. '
                 '[default: %default]', default=False),
     make_option('--generate_average_tables', action='store_true', help='generate average '
                 'tables of results. A summary of the metrics and alpha diversity '
@@ -185,7 +194,7 @@ def main():
     try:
         resolution = int(resolution)
     except(ValueError):
-        option_parser.error('Inavlid resolution.')
+        option_parser.error('Invalid resolution.')
         exit(0)
 
     # output directory check

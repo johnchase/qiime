@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 # remember to add yourself if you make changes
 __credits__ = ["Jens Reeder", "Rob Knight", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 
@@ -16,7 +16,7 @@ from tempfile import mkstemp
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 from skbio.parse.sequences import parse_fasta
-from brokit.denoiser import FlowgramCollection, Flowgram, lazy_parse_sff_handle
+from bfillings.denoiser import FlowgramCollection, Flowgram, lazy_parse_sff_handle
 
 from qiime.denoiser.flowgram_filter import (extract_barcodes_from_mapping,
                                             build_inverse_barcode_map, write_sff_header, filter_sff_file, within_length,

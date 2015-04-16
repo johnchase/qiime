@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Jeremy Widmann"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -16,9 +16,9 @@ from tempfile import mkstemp
 from unittest import TestCase, main
 
 from numpy.testing import assert_almost_equal
-from skbio.core.exception import SequenceCollectionError
-from skbio.core.alignment import SequenceCollection, Alignment
-from skbio.core.sequence import DNA
+from skbio.alignment import (SequenceCollectionError, SequenceCollection,
+                              Alignment)
+from skbio.sequence import DNA
 from skbio.parse.sequences import parse_fasta
 
 from qiime.align_seqs import (compute_min_alignment_length,

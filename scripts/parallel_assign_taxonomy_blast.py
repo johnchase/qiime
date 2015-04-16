@@ -6,13 +6,13 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Jai Ram Rideout", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from os.path import join, abspath
 from qiime.util import (get_options_lookup, load_qiime_config, make_option,
-                        parse_command_line_parameters)
+                         parse_command_line_parameters)
 from qiime.parallel.assign_taxonomy import ParallelBlastTaxonomyAssigner
 
 qiime_config = load_qiime_config()

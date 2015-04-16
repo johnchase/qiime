@@ -6,14 +6,14 @@ __author__ = "William Van Treuren"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["William Van Treuren", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "William Van Treuren"
 __email__ = "vantreur@colorado.edu"
 
 from itertools import combinations, izip
 from collections import defaultdict
 from numpy import array, isnan, min as np_min
-from skbio.draw.distributions import boxplots
+from skbio.draw import boxplots
 from qiime.format import format_p_value_for_num_iters
 from qiime.parse import (parse_mapping_file_to_dict,
                          parse_rarefaction,

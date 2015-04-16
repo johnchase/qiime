@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 # remember to add yourself if you make changes
 __credits__ = ["Rob Knight", "Kyle Bittinger", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Daniel McDonald"
 __email__ = "wasade@gmail.com"
 
@@ -15,10 +15,10 @@ from os import remove, close
 from tempfile import mkstemp
 from unittest import TestCase, main
 
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from skbio.parse.sequences import parse_fasta
-from skbio.core.alignment import SequenceCollection
-from skbio.core.sequence import DNA
+from skbio.alignment import SequenceCollection
+from skbio.sequence import DNA
 
 from qiime.pick_rep_set import (RepSetPicker, GenericRepSetPicker, first_id,
                                 first, random_id, longest_id, unique_id_map, label_to_name,

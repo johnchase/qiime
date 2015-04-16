@@ -43,7 +43,7 @@ __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "William Walters"]  # remember to add yourself
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
 
@@ -54,7 +54,7 @@ from operator import itemgetter
 from copy import deepcopy
 from shutil import copyfile
 
-from skbio.core.sequence import DNASequence
+from skbio.sequence import DNASequence
 
 from qiime.util import get_qiime_project_dir, duplicates_indices
 from qiime.parse import parse_mapping_file

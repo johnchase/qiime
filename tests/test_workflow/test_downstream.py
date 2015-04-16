@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso", "Kyle Bittinger", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -18,7 +18,7 @@ from os.path import join, exists, getsize, split, splitext
 from tempfile import mkdtemp
 
 from unittest import TestCase, main
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from qiime.compare_alpha_diversity import compare_alpha_diversities
 from qiime.util import load_qiime_config, get_qiime_temp_dir
 from qiime.parse import (parse_qiime_parameters,
@@ -523,8 +523,8 @@ class DownstreamWorkflowTests(TestCase):
         self.assertTrue(getsize(log_fp) > 0)
 
 params_f1 = """
-multiple_rarefactions:num-reps	1
-multiple_rarefactions_even_depth:num-reps	5
+multiple_rarefactions:num_reps	1
+multiple_rarefactions_even_depth:num_reps	5
 """.split('\n')
 
 if __name__ == "__main__":

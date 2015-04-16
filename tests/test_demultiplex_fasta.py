@@ -5,7 +5,7 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "William Walters"]  # remember to add yourself
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
 
@@ -14,9 +14,9 @@ from os.path import exists, join
 from shutil import rmtree
 from tempfile import mkdtemp, mkstemp
 
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 from unittest import TestCase, main
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 
 from qiime.parse import parse_qual_score
 from qiime.demultiplex_fasta import (

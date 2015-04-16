@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -110,7 +110,6 @@ def main():
 
     if min_count_fraction > 0:
         min_count = otu_table.sum() * min_count_fraction
-        print otu_table.sum(), min_count
 
     otu_ids_to_keep = set(otu_table.ids(axis='observation'))
 

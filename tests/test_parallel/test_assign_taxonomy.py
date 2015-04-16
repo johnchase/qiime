@@ -6,7 +6,7 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
@@ -18,9 +18,9 @@ from tempfile import NamedTemporaryFile, mkstemp, mkdtemp
 from unittest import TestCase, main
 
 from burrito.util import ApplicationError
-from skbio.util.misc import remove_files, create_dir
-from skbio.core.alignment import SequenceCollection
-from skbio.core.sequence import DNA
+from skbio.util import remove_files, create_dir
+from skbio.alignment import SequenceCollection
+from skbio.sequence import DNA
 
 from qiime.parallel.assign_taxonomy import (ParallelBlastTaxonomyAssigner,
                                             ParallelRdpTaxonomyAssigner,

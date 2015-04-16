@@ -5,7 +5,7 @@ __author__ = "Jesse Zaneveld"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jesse Zaneveld", "Rob Knight"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jesse Zaneveld"
 __email__ = "zaneveld@gmail.com"
 
@@ -22,7 +22,7 @@ from tempfile import mkstemp
 from numpy import array, arange, log, log10
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
-from brokit.blast import BlastResult
+from bfillings.blast import BlastResult
 from qiime.exclude_seqs_by_blast import blast_genome,\
     find_homologs,\
     sequences_to_file,\

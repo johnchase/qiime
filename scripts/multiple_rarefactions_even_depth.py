@@ -6,7 +6,7 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
@@ -47,7 +47,7 @@ script_info['required_options'] = [
 
 script_info['optional_options'] = [
 
-    make_option('-n', '--num-reps', dest='num_reps', default=10, type='int',
+    make_option('-n', '--num_reps', dest='num_reps', default=10, type='int',
                 help='num iterations at each seqs/sample level [default: %default]'),
 
     make_option('--lineages_included', dest='lineages_included', default=False,

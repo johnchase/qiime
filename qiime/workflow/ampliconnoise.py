@@ -7,12 +7,12 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Kyle Bittinger", "Justin Kuczynski",
                "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 import os
-from skbio.core.sequence import DNASequence
+from skbio.sequence import DNASequence
 from qiime.parse import parse_mapping_file
 from qiime.util import create_dir
 from qiime.workflow.util import (print_to_stdout,

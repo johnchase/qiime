@@ -4,7 +4,7 @@ __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["William Walters"]  # remember to add yourself
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
 
@@ -12,7 +12,7 @@ from os.path import join, basename, exists
 from shutil import rmtree
 
 from unittest import TestCase, main
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from tempfile import mkdtemp
 
 from qiime.util import create_dir

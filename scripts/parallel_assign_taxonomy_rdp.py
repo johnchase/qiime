@@ -7,14 +7,14 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Antonio Gonzalez Pena", "William Walters",
                "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from os import getenv
 from os.path import join
 from qiime.util import (get_options_lookup, load_qiime_config, make_option,
-                        parse_command_line_parameters)
+                         parse_command_line_parameters)
 from qiime.parallel.assign_taxonomy import ParallelRdpTaxonomyAssigner
 
 qiime_config = load_qiime_config()
@@ -51,7 +51,7 @@ script_info['optional_options'] = [
                 default=rdp_classifier_fp),
     make_option('-c', '--confidence', action='store',
                 type='float', help='Minimum confidence to' +
-                ' record an assignment [default: %default]', default=0.80),
+                ' record an assignment [default: %default]', default=0.50),
     make_option('-t', '--id_to_taxonomy_fp', action='store',
                 type='existing_filepath', help='full path to ' +
                 'id_to_taxonomy mapping file [default: %s]' % default_id_to_taxonomy_fp,

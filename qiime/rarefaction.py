@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Jose Carlos Clemente Litran", "Rob Knight",
                "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
@@ -19,7 +19,7 @@ import os.path
 
 import numpy
 from numpy import inf
-from skbio.math.subsample import subsample
+from skbio.stats import subsample
 from biom.err import errstate
 
 from qiime.util import FunctionWithParams, write_biom_table
@@ -32,11 +32,10 @@ class SingleRarefactionMaker(FunctionWithParams):
     def __init__(self, otu_path, depth):
         """ init a singlerarefactionmaker
 
-        otu_path has to be parseable when opened by parse_biom_table,
+        otu_path has to be a parseable BIOM table,
         we just ignore any rarefaction levels beyond any sample in the data
         """
         self.depth = depth
-        #self.otu_table = parse_biom_table(open(otu_path,'U'))
         self.otu_table = self.getBiomData(otu_path)
 
         self.max_num_taxa = -1

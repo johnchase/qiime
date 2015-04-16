@@ -4,7 +4,7 @@ __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["William Walters", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
 
@@ -15,7 +15,7 @@ from tempfile import mkstemp
 
 from numpy import array
 from unittest import TestCase, main
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 
 from qiime.util import create_dir
 from qiime.truncate_fasta_qual_files import parse_fasta_file,\

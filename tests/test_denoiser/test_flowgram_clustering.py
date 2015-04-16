@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 # remember to add yourself if you make changes
 __credits__ = ["Jens Reeder", "Rob Knight", "Nigel Cook"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 
@@ -19,7 +19,7 @@ from tempfile import mkdtemp
 
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
-from brokit.denoiser import Flowgram, parse_sff, FlowgramCollection
+from bfillings.denoiser import Flowgram, parse_sff, FlowgramCollection
 from burrito.util import ApplicationNotFoundError
 
 from qiime.denoiser.flowgram_clustering import *
